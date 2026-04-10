@@ -34,10 +34,18 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-
+  isar: ^3.1.0+1
+  path_provider: ^2.1.5
+  uuid: ^4.5.2
+  isar_flutter_libs: ^3.1.0+1
+  flutter_riverpod: ^2.6.1
+  image_picker: ^1.2.1
+  shared_preferences: ^2.5.4
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.1.4
+  gal: ^2.3.2
+  
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -45,6 +53,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.13
+  flutter_test:
+    sdk: flutter
+  mocktail:
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
