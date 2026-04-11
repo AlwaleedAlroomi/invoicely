@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/theme/app_colors.dart';
@@ -67,13 +68,26 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
               },
               icon: Icon(Icons.delete_sweep_outlined),
             ),
-            // IconButton(), view mode toggle
+            IconButton(
+              tooltip: 'View Mode',
+              onPressed: () {
+                final prefs = ref.read(sharedPreferencesProvider);
+                final currentViewMode = ref.read(isListViewModeProvider);
+                prefs.setBool('is_list_view', !currentViewMode);
+                ref.read(isListViewModeProvider.notifier).state =
+                    !currentViewMode;
+              },
+              icon: Icon(
+                ref.watch(isListViewModeProvider)
+                    ? Icons.grid_view_rounded
+                    : Icons.view_list_rounded,
+              ),
+            ),
             PopupMenuButton<SortType>(
               icon: const Icon(Icons.sort_rounded),
               tooltip: 'Sort Clients',
               initialValue: sortType,
               onSelected: (type) {
-                print(type);
                 ref.read(clientSortTypeProvider.notifier).setSortType(type);
               },
               itemBuilder: (context) => sortOptions.map((type) {
@@ -214,37 +228,56 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
           borderRadius: BorderRadius.circular(12),
           onTap: () => Navigator.of(
             context,
-          ).push(FadeThroughRoute(page: ClientViewScreen(client: client))),
+          ).push(FadeThroughRoute(page: ClientViewScreen(initClient: client))),
           onLongPress: () => _showDeleteDialog(client),
           child: Column(
             children: [
-              // _buildProductImage(product, height: 120, isGridView: true),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        client.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyLarge,
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      leading: CircleAvatar(
+                        child: Text(client.name[0].toUpperCase()),
                       ),
-                      const SizedBox(height: 6),
-                      // _buildPriceText(product),
-                      const SizedBox(height: 8),
-                      // _buildStockInfo(product),
-                      // const Spacer(),
-                      // Row(
-                      //   children: [
-                      //     _buildSkuChip(product),
-                      //     const Spacer(),
-                      //     _buildQrButton(product),
-                      //   ],
-                      // ),
-                    ],
-                  ),
+                      title: Text(
+                        client.name,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(client.email),
+                          if (client.city != null || client.country != null)
+                            Text(
+                              [
+                                client.city,
+                                client.country,
+                              ].whereType<String>().join(', '),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                        ],
+                      ),
+                      trailing: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            getFlagEmoji(client.country ?? ''),
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          if (!client.isActive)
+                            Text(
+                              'Archived',
+                              style: TextStyle(fontSize: 10, color: Colors.red),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -258,7 +291,10 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Product?'),
+        title: Text(
+          'Delete Product?',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         content: client.isActive
             ? Text('Are you sure you want to delete "${client.name}"?')
             : Text(
@@ -271,14 +307,14 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
           ),
           TextButton(
             onPressed: () {
-              // product.isActive
-              //     ? ref
-              //           .read(productControllerProvider.notifier)
-              //           .deleteProduct(product)
-              //     : ref
-              //           .read(productControllerProvider.notifier)
-              //           .forceDeleteProduct(product);
-              // Navigator.pop(context);
+              client.isActive
+                  ? ref
+                        .read(clientControllerProvider.notifier)
+                        .archiveClient(client)
+                  : ref
+                        .read(clientControllerProvider.notifier)
+                        .deleteClient(client);
+              Navigator.pop(context);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -294,7 +330,7 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
         maxCrossAxisExtent: 200,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        mainAxisExtent: 280,
+        mainAxisExtent: 200,
       ),
       itemCount: clients.length,
       itemBuilder: (context, index) {
@@ -331,40 +367,41 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
           borderRadius: BorderRadius.circular(12),
           onTap: () => Navigator.of(
             context,
-          ).push(FadeThroughRoute(page: ClientViewScreen(client: client))),
+          ).push(FadeThroughRoute(page: ClientViewScreen(initClient: client))),
           onLongPress: () => _showDeleteDialog(client),
-          child: Column(
-            children: [
-              // _buildProductImage(product, height: 120, isGridView: true),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        client.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      // _buildPriceText(product),
-                      // const SizedBox(height: 8),
-                      // _buildStockInfo(product),
-                      // const Spacer(),
-                      // Row(
-                      //   children: [
-                      //     _buildSkuChip(product),
-                      //     const Spacer(),
-                      //     _buildQrButton(product),
-                      //   ],
-                      // ),
-                    ],
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  child: Text(
+                    client.name[0].toUpperCase(),
+                    style: TextStyle(fontSize: 22),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  client.name,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  client.email,
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (client.country != null)
+                  Text(
+                    '${getFlagEmoji(client.country!)}  ${client.country}',
+                    style: TextStyle(fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

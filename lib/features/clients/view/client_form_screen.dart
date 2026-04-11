@@ -418,7 +418,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                               getFlagEmoji(country),
                               style: const TextStyle(fontSize: 24),
                             ),
-                            title: Text(country),
+                            title: Text(
+                              country,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                             trailing: isSelected
                                 ? const Icon(Icons.check, color: Colors.blue)
                                 : null,

@@ -632,7 +632,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Product?'),
+        title: Text(
+          'Delete Product?',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         content: product.isActive
             ? Text('Are you sure you want to delete "${product.name}"?')
             : Text(
