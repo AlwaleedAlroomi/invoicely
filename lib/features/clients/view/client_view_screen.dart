@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/constants/countries.dart';
+import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
+import 'package:invoicely/features/clients/providers/client_providers.dart';
+import 'package:invoicely/features/clients/view/client_form_screen.dart';
 import 'package:invoicely/features/clients/widgets/header_section.dart';
 
 class ClientViewScreen extends ConsumerStatefulWidget {
@@ -138,7 +141,7 @@ class _ClientViewScreenState extends ConsumerState<ClientViewScreen> {
       actions: [
         PopupMenuButton(
           itemBuilder: (_) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'edit',
               child: Row(
                 children: [
@@ -148,7 +151,7 @@ class _ClientViewScreenState extends ConsumerState<ClientViewScreen> {
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'archive',
               child: Row(
                 children: [
@@ -158,7 +161,7 @@ class _ClientViewScreenState extends ConsumerState<ClientViewScreen> {
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'delete',
               child: Row(
                 children: [
@@ -169,16 +172,34 @@ class _ClientViewScreenState extends ConsumerState<ClientViewScreen> {
               ),
             ),
           ],
-          onSelected: (value) {
+          onSelected: (value) async {
             switch (value) {
               case 'edit':
-                // navigate to edit screen
+                final updatedClient = await Navigator.of(context)
+                    .push<ClientModel>(
+                      FadeThroughRoute(
+                        page: ClientFormScreen(initialClient: client),
+                      ),
+                    );
+                if (updatedClient != null) {
+                  setState(() {
+                    client = updatedClient;
+                  });
+                }
                 break;
               case 'archive':
-                // call archiveClient
+                await ref
+                    .read(clientControllerProvider.notifier)
+                    .archiveClient(client);
+                if (!context.mounted) return;
+                Navigator.pop(context);
                 break;
               case 'delete':
-                // show confirm dialog then delete
+                await ref
+                    .read(clientControllerProvider.notifier)
+                    .deleteClient(client);
+                if (!context.mounted) return;
+                Navigator.pop(context);
                 break;
             }
           },
