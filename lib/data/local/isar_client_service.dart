@@ -69,8 +69,6 @@ class IsarClientService {
   }
 
   Future<Result<ClientModel>> updateClient(ClientModel client) async {
-    print('from isar');
-
     try {
       final updatedClient = await _isar.writeTxn(() async {
         await _isar.clientModels.put(client);

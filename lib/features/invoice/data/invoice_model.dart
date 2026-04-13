@@ -29,6 +29,7 @@ class InvoiceModel implements SortableEntity {
 
   String? notes;
   String? terms;
+  bool isActive = true;
   late DateTime createdAt;
   late DateTime updatedAt;
 
@@ -47,6 +48,7 @@ class InvoiceModel implements SortableEntity {
     required this.updatedAt,
     this.notes,
     this.terms,
+    this.isActive = true,
   });
 
   InvoiceModel copyWith({
@@ -61,6 +63,7 @@ class InvoiceModel implements SortableEntity {
     List<InvoiceItemModel>? items,
     String? notes,
     String? terms,
+    bool? isActive,
   }) {
     return InvoiceModel(
       remoteId: remoteId,
@@ -77,6 +80,7 @@ class InvoiceModel implements SortableEntity {
       terms: terms ?? this.terms,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
+      isActive: isActive ?? this.isActive,
     )..isarId = isarId;
   }
 

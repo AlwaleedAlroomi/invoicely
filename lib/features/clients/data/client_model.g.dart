@@ -133,7 +133,15 @@ const ClientModelSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'invoices': LinkSchema(
+      id: -6604318969972354132,
+      name: r'invoices',
+      target: r'InvoiceModel',
+      single: false,
+      linkName: r'client',
+    )
+  },
   embeddedSchemas: {},
   getId: _clientModelGetId,
   getLinks: _clientModelGetLinks,
@@ -331,12 +339,14 @@ Id _clientModelGetId(ClientModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _clientModelGetLinks(ClientModel object) {
-  return [];
+  return [object.invoices];
 }
 
 void _clientModelAttach(
     IsarCollection<dynamic> col, Id id, ClientModel object) {
   object.isarId = id;
+  object.invoices
+      .attach(col, col.isar.collection<InvoiceModel>(), r'invoices', id);
 }
 
 extension ClientModelByIndex on IsarCollection<ClientModel> {
@@ -2997,7 +3007,68 @@ extension ClientModelQueryObject
     on QueryBuilder<ClientModel, ClientModel, QFilterCondition> {}
 
 extension ClientModelQueryLinks
-    on QueryBuilder<ClientModel, ClientModel, QFilterCondition> {}
+    on QueryBuilder<ClientModel, ClientModel, QFilterCondition> {
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition> invoices(
+      FilterQuery<InvoiceModel> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'invoices');
+    });
+  }
+
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition>
+      invoicesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'invoices', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition>
+      invoicesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'invoices', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition>
+      invoicesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'invoices', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition>
+      invoicesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'invoices', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition>
+      invoicesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'invoices', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<ClientModel, ClientModel, QAfterFilterCondition>
+      invoicesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'invoices', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension ClientModelQuerySortBy
     on QueryBuilder<ClientModel, ClientModel, QSortBy> {

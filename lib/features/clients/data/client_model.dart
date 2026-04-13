@@ -1,4 +1,5 @@
 import 'package:invoicely/core/models/sortable_entity.dart';
+import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
 
@@ -12,7 +13,8 @@ class ClientModel implements SortableEntity {
 
   @Index(unique: true)
   String? remoteId;
-
+  @Backlink(to: 'client')
+  final invoices = IsarLinks<InvoiceModel>();
   String name;
   String email;
   String? phone;

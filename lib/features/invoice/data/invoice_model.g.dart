@@ -42,60 +42,65 @@ const InvoiceModelSchema = CollectionSchema(
       name: r'invoiceNumber',
       type: IsarType.string,
     ),
-    r'issueDate': PropertySchema(
+    r'isActive': PropertySchema(
       id: 5,
+      name: r'isActive',
+      type: IsarType.bool,
+    ),
+    r'issueDate': PropertySchema(
+      id: 6,
       name: r'issueDate',
       type: IsarType.dateTime,
     ),
     r'items': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'items',
       type: IsarType.objectList,
       target: r'InvoiceItemModel',
     ),
     r'notes': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'notes',
       type: IsarType.string,
     ),
     r'remoteId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'status',
       type: IsarType.byte,
       enumMap: _InvoiceModelstatusEnumValueMap,
     ),
     r'subTotal': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'subTotal',
       type: IsarType.double,
     ),
     r'taxAmount': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'taxAmount',
       type: IsarType.double,
     ),
     r'taxRate': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'taxRate',
       type: IsarType.double,
     ),
     r'terms': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'terms',
       type: IsarType.string,
     ),
     r'totalAmount': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'totalAmount',
       type: IsarType.double,
     ),
     r'updatedAt': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -184,22 +189,23 @@ void _invoiceModelSerialize(
   writer.writeString(offsets[2], object.displayName);
   writer.writeDateTime(offsets[3], object.dueDate);
   writer.writeString(offsets[4], object.invoiceNumber);
-  writer.writeDateTime(offsets[5], object.issueDate);
+  writer.writeBool(offsets[5], object.isActive);
+  writer.writeDateTime(offsets[6], object.issueDate);
   writer.writeObjectList<InvoiceItemModel>(
-    offsets[6],
+    offsets[7],
     allOffsets,
     InvoiceItemModelSchema.serialize,
     object.items,
   );
-  writer.writeString(offsets[7], object.notes);
-  writer.writeString(offsets[8], object.remoteId);
-  writer.writeByte(offsets[9], object.status.index);
-  writer.writeDouble(offsets[10], object.subTotal);
-  writer.writeDouble(offsets[11], object.taxAmount);
-  writer.writeDouble(offsets[12], object.taxRate);
-  writer.writeString(offsets[13], object.terms);
-  writer.writeDouble(offsets[14], object.totalAmount);
-  writer.writeDateTime(offsets[15], object.updatedAt);
+  writer.writeString(offsets[8], object.notes);
+  writer.writeString(offsets[9], object.remoteId);
+  writer.writeByte(offsets[10], object.status.index);
+  writer.writeDouble(offsets[11], object.subTotal);
+  writer.writeDouble(offsets[12], object.taxAmount);
+  writer.writeDouble(offsets[13], object.taxRate);
+  writer.writeString(offsets[14], object.terms);
+  writer.writeDouble(offsets[15], object.totalAmount);
+  writer.writeDateTime(offsets[16], object.updatedAt);
 }
 
 InvoiceModel _invoiceModelDeserialize(
@@ -212,25 +218,26 @@ InvoiceModel _invoiceModelDeserialize(
     createdAt: reader.readDateTime(offsets[0]),
     dueDate: reader.readDateTime(offsets[3]),
     invoiceNumber: reader.readString(offsets[4]),
-    issueDate: reader.readDateTime(offsets[5]),
+    isActive: reader.readBoolOrNull(offsets[5]) ?? true,
+    issueDate: reader.readDateTime(offsets[6]),
     items: reader.readObjectList<InvoiceItemModel>(
-          offsets[6],
+          offsets[7],
           InvoiceItemModelSchema.deserialize,
           allOffsets,
           InvoiceItemModel(),
         ) ??
         [],
-    notes: reader.readStringOrNull(offsets[7]),
-    remoteId: reader.readStringOrNull(offsets[8]),
+    notes: reader.readStringOrNull(offsets[8]),
+    remoteId: reader.readStringOrNull(offsets[9]),
     status:
-        _InvoiceModelstatusValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+        _InvoiceModelstatusValueEnumMap[reader.readByteOrNull(offsets[10])] ??
             InvoiceStatus.draft,
-    subTotal: reader.readDouble(offsets[10]),
-    taxAmount: reader.readDouble(offsets[11]),
-    taxRate: reader.readDouble(offsets[12]),
-    terms: reader.readStringOrNull(offsets[13]),
-    totalAmount: reader.readDouble(offsets[14]),
-    updatedAt: reader.readDateTime(offsets[15]),
+    subTotal: reader.readDouble(offsets[11]),
+    taxAmount: reader.readDouble(offsets[12]),
+    taxRate: reader.readDouble(offsets[13]),
+    terms: reader.readStringOrNull(offsets[14]),
+    totalAmount: reader.readDouble(offsets[15]),
+    updatedAt: reader.readDateTime(offsets[16]),
   );
   object.isarId = id;
   return object;
@@ -254,8 +261,10 @@ P _invoiceModelDeserializeProp<P>(
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 6:
+      return (reader.readDateTime(offset)) as P;
+    case 7:
       return (reader.readObjectList<InvoiceItemModel>(
             offset,
             InvoiceItemModelSchema.deserialize,
@@ -263,24 +272,24 @@ P _invoiceModelDeserializeProp<P>(
             InvoiceItemModel(),
           ) ??
           []) as P;
-    case 7:
-      return (reader.readStringOrNull(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset)) as P;
+    case 10:
       return (_InvoiceModelstatusValueEnumMap[reader.readByteOrNull(offset)] ??
           InvoiceStatus.draft) as P;
-    case 10:
-      return (reader.readDouble(offset)) as P;
     case 11:
       return (reader.readDouble(offset)) as P;
     case 12:
       return (reader.readDouble(offset)) as P;
     case 13:
-      return (reader.readStringOrNull(offset)) as P;
-    case 14:
       return (reader.readDouble(offset)) as P;
+    case 14:
+      return (reader.readStringOrNull(offset)) as P;
     case 15:
+      return (reader.readDouble(offset)) as P;
+    case 16:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -956,6 +965,16 @@ extension InvoiceModelQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'invoiceNumber',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<InvoiceModel, InvoiceModel, QAfterFilterCondition>
+      isActiveEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isActive',
+        value: value,
       ));
     });
   }
@@ -2086,6 +2105,18 @@ extension InvoiceModelQuerySortBy
     });
   }
 
+  QueryBuilder<InvoiceModel, InvoiceModel, QAfterSortBy> sortByIsActive() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.asc);
+    });
+  }
+
+  QueryBuilder<InvoiceModel, InvoiceModel, QAfterSortBy> sortByIsActiveDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.desc);
+    });
+  }
+
   QueryBuilder<InvoiceModel, InvoiceModel, QAfterSortBy> sortByIssueDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issueDate', Sort.asc);
@@ -2273,6 +2304,18 @@ extension InvoiceModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<InvoiceModel, InvoiceModel, QAfterSortBy> thenByIsActive() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.asc);
+    });
+  }
+
+  QueryBuilder<InvoiceModel, InvoiceModel, QAfterSortBy> thenByIsActiveDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.desc);
+    });
+  }
+
   QueryBuilder<InvoiceModel, InvoiceModel, QAfterSortBy> thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
@@ -2442,6 +2485,12 @@ extension InvoiceModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<InvoiceModel, InvoiceModel, QDistinct> distinctByIsActive() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isActive');
+    });
+  }
+
   QueryBuilder<InvoiceModel, InvoiceModel, QDistinct> distinctByIssueDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'issueDate');
@@ -2541,6 +2590,12 @@ extension InvoiceModelQueryProperty
   QueryBuilder<InvoiceModel, String, QQueryOperations> invoiceNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'invoiceNumber');
+    });
+  }
+
+  QueryBuilder<InvoiceModel, bool, QQueryOperations> isActiveProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isActive');
     });
   }
 
