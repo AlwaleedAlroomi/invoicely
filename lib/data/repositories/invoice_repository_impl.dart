@@ -11,6 +11,16 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   const InvoiceRepositoryImpl(this._invoiceService);
 
   @override
+  Future<Result<String>> generateInvoiceNumber() async {
+    try {
+      final number = await _invoiceService.generateInvoiceNumber();
+      return Success(number);
+    } catch (e) {
+      return Error(AppFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Result<InvoiceModel>> createInvoice(
     InvoiceModel invoice,
     ClientModel client,
@@ -94,9 +104,12 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Result<InvoiceModel>> updateInvoice(InvoiceModel invoice) async {
+  Future<Result<InvoiceModel>> updateInvoice(
+    InvoiceModel original,
+    InvoiceModel updated,
+  ) async {
     try {
-      final result = await _invoiceService.updateInvoice(invoice);
+      final result = await _invoiceService.updateInvoice(original, updated);
       switch (result) {
         case Success():
           return Success(result.data);
@@ -121,7 +134,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
         return Error(AppFailure.database('Invoice not found'));
       }
       final updated = invoice.copyWith(status: status);
-      return await _invoiceService.updateInvoice(updated);
+      return await _invoiceService.updateInvoice(invoice, updated);
     } catch (e) {
       return Error(AppFailure('Unexpected error updating invoice status: $e'));
     }

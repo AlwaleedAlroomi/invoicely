@@ -9,13 +9,17 @@ abstract class InvoiceRepository {
     InvoiceModel invoice,
     ClientModel client,
   );
+  Future<Result<String>> generateInvoiceNumber();
   // read
   Future<Result<InvoiceModel?>> getInvoiceByRemoteId(String remoteId);
   Future<Result<List<InvoiceModel>>> getAllInvoices();
   Future<Result<List<InvoiceModel>>> getInvoicesByClient(int clientIsarId);
   Future<Result<List<InvoiceModel>>> getInvoicesByStatus(InvoiceStatus status);
   // update
-  Future<Result<InvoiceModel>> updateInvoice(InvoiceModel invoice);
+  Future<Result<InvoiceModel>> updateInvoice(
+    InvoiceModel invoice,
+    InvoiceModel updated,
+  );
   Future<Result<void>> updateInvoiceStatus(
     InvoiceModel invoice,
     InvoiceStatus status,

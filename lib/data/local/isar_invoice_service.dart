@@ -11,6 +11,13 @@ class IsarInvoiceService {
   final Isar _isar;
   IsarInvoiceService([Isar? isar]) : _isar = isar ?? IsarService.instance;
 
+  @override
+  Future<String> generateInvoiceNumber() async {
+    final count = await _isar.invoiceModels.count();
+    final number = (count + 1).toString().padLeft(4, '0');
+    return 'INV-$number';
+  }
+
   // create
   Future<Result<InvoiceModel>> createInvoice(
     InvoiceModel invoice,
@@ -88,13 +95,16 @@ class IsarInvoiceService {
   }
 
   // update
-  Future<Result<InvoiceModel>> updateInvoice(InvoiceModel invoice) async {
+  Future<Result<InvoiceModel>> updateInvoice(
+    InvoiceModel original,
+    InvoiceModel updated,
+  ) async {
     try {
-      final updatedInvoice = invoice.copyWith();
+      updated.client.value = original.client.value;
       await _isar.writeTxn(() async {
-        await _isar.invoiceModels.put(updatedInvoice);
+        await _isar.invoiceModels.put(updated);
       });
-      return Success(updatedInvoice);
+      return Success(updated);
     } on IsarError catch (e) {
       return Error(
         AppFailure.database('Isar error updating invoice: ${e.message}'),
