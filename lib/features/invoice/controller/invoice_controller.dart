@@ -4,9 +4,8 @@ import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/features/clients/data/client_model.dart';
-import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
+import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/repository/invoice_repository.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,7 +47,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
 
   InvoiceController(this._invoiceRepository, this.ref)
     : super(InvoiceListState(isLoading: false, invoices: [], failure: null)) {
-    ref.listen(sortTypeProvider, (_, _) {
+    ref.listen(invoiceSortTypeProvider, (_, _) {
       _applyFiltersAndSort();
     });
 
