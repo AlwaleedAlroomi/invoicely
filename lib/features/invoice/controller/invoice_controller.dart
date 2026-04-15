@@ -50,125 +50,126 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     ref.listen(invoiceSortTypeProvider, (_, _) {
       _applyFiltersAndSort();
     });
+  }
 
-    Future<void> fetchInvoices() async {
-      state = state.copyWith(isLoading: true, failure: null);
-      final result = await _invoiceRepository.getAllInvoices();
-      switch (result) {
-        case Success<List<InvoiceModel>> fetched:
-          _allInvoices = fetched.data;
-          _applyFiltersAndSort();
-          break;
-        case Error<List<InvoiceModel>> e:
-          state = state.copyWith(
-            isLoading: false,
-            failure: e.failure,
-            invoices: state.invoices.isEmpty ? const [] : state.invoices,
-          );
-          break;
-      }
-    }
-
-    Future<void> updateInvoiceStatus(
-      InvoiceModel invoice,
-      InvoiceStatus status,
-    ) async {
-      state = state.copyWith(isLoading: true, failure: null);
-      final Result<void> result = await _invoiceRepository.updateInvoiceStatus(
-        invoice,
-        status,
-      );
-      switch (result) {
-        case Success<void> _:
-          fetchInvoices();
-          break;
-        case Error<void> e:
-          state = state.copyWith(
-            isLoading: false,
-            invoices: [...state.invoices],
-            failure: e.failure,
-          );
-          break;
-      }
-    }
-
-    Future<void> deleteInvoice(InvoiceModel invoice) async {
-      state = state.copyWith(isLoading: true, failure: null);
-      final result = await _invoiceRepository.deleteInvoice(invoice);
-      switch (result) {
-        case Success<void> _:
-          fetchInvoices();
-          break;
-        case Error<void> e:
-          state = state.copyWith(
-            isLoading: false,
-            failure: e.failure,
-            invoices: [...state.invoices],
-          );
-      }
-    }
-
-    Future<void> getInvoiceByRemoteId(String remoteId) async {
-      state = state.copyWith(isLoading: true, failure: null);
-      final result = await _invoiceRepository.getInvoiceByRemoteId(remoteId);
-      switch (result) {
-        case Success<InvoiceModel?> fetched:
-          state = state.copyWith(
-            isLoading: false,
-            failure: null,
-            invoices: state.invoices,
-            selectedInvoice: fetched.data,
-          );
-          break;
-        case Error<InvoiceModel?> e:
-          state = state.copyWith(
-            isLoading: false,
-            failure: e.failure,
-            invoices: state.invoices,
-          );
-      }
-    }
-
-    Future<void> getInvoicesByStatus(InvoiceStatus status) async {
-      state = state.copyWith(isLoading: true, failure: null);
-      final result = await _invoiceRepository.getInvoicesByStatus(status);
-      switch (result) {
-        case Success<List<InvoiceModel>> fetched:
-          state = state.copyWith(
-            isLoading: false,
-            failure: null,
-            invoices: fetched.data,
-          );
-          break;
-        case Error<List<InvoiceModel>> e:
-          state = state.copyWith(
-            isLoading: false,
-            failure: e.failure,
-            invoices: state.invoices,
-          );
-      }
-    }
-
-    Future<void> getInvoicesByClient(int clientIsarId) async {
-      state = state.copyWith(isLoading: true, failure: null);
-      final result = await _invoiceRepository.getInvoicesByClient(clientIsarId);
-      switch (result) {
-        case Success<List<InvoiceModel>> fetched:
-          state = state.copyWith(
-            isLoading: false,
-            failure: null,
-            invoices: fetched.data,
-          );
-          break;
-        case Error<List<InvoiceModel>> e:
-          state = state.copyWith(
-            isLoading: false,
-            failure: e.failure,
-            invoices: state.invoices,
-          );
-      }
+  Future<void> fetchInvoices() async {
+    state = state.copyWith(isLoading: true, failure: null);
+    final result = await _invoiceRepository.getAllInvoices();
+    switch (result) {
+      case Success<List<InvoiceModel>> fetched:
+        _allInvoices = fetched.data;
+        _applyFiltersAndSort();
+        break;
+      case Error<List<InvoiceModel>> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          invoices: state.invoices.isEmpty ? const [] : state.invoices,
+        );
+        break;
     }
   }
+
+  Future<void> updateInvoiceStatus(
+    InvoiceModel invoice,
+    InvoiceStatus status,
+  ) async {
+    state = state.copyWith(isLoading: true, failure: null);
+    final Result<void> result = await _invoiceRepository.updateInvoiceStatus(
+      invoice,
+      status,
+    );
+    switch (result) {
+      case Success<void> _:
+        fetchInvoices();
+        break;
+      case Error<void> e:
+        state = state.copyWith(
+          isLoading: false,
+          invoices: [...state.invoices],
+          failure: e.failure,
+        );
+        break;
+    }
+  }
+
+  Future<void> deleteInvoice(InvoiceModel invoice) async {
+    state = state.copyWith(isLoading: true, failure: null);
+    final result = await _invoiceRepository.deleteInvoice(invoice);
+    switch (result) {
+      case Success<void> _:
+        fetchInvoices();
+        break;
+      case Error<void> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          invoices: [...state.invoices],
+        );
+    }
+  }
+
+  Future<void> getInvoiceByRemoteId(String remoteId) async {
+    state = state.copyWith(isLoading: true, failure: null);
+    final result = await _invoiceRepository.getInvoiceByRemoteId(remoteId);
+    switch (result) {
+      case Success<InvoiceModel?> fetched:
+        state = state.copyWith(
+          isLoading: false,
+          failure: null,
+          invoices: state.invoices,
+          selectedInvoice: fetched.data,
+        );
+        break;
+      case Error<InvoiceModel?> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          invoices: state.invoices,
+        );
+    }
+  }
+
+  Future<void> getInvoicesByStatus(InvoiceStatus status) async {
+    state = state.copyWith(isLoading: true, failure: null);
+    final result = await _invoiceRepository.getInvoicesByStatus(status);
+    switch (result) {
+      case Success<List<InvoiceModel>> fetched:
+        state = state.copyWith(
+          isLoading: false,
+          failure: null,
+          invoices: fetched.data,
+        );
+        break;
+      case Error<List<InvoiceModel>> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          invoices: state.invoices,
+        );
+    }
+  }
+
+  Future<void> getInvoicesByClient(int clientIsarId) async {
+    state = state.copyWith(isLoading: true, failure: null);
+    final result = await _invoiceRepository.getInvoicesByClient(clientIsarId);
+    switch (result) {
+      case Success<List<InvoiceModel>> fetched:
+        state = state.copyWith(
+          isLoading: false,
+          failure: null,
+          invoices: fetched.data,
+        );
+        break;
+      case Error<List<InvoiceModel>> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          invoices: state.invoices,
+        );
+    }
+  }
+
   void _applyFiltersAndSort() {
     if (_allInvoices.isEmpty) {
       state = state.copyWith(invoices: [], isLoading: false);
@@ -201,7 +202,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
       _applyFiltersAndSort();
     } else {
       // TODO: fetch invoices
-      // fetchInvoices();
+      fetchInvoices();
     }
   }
 

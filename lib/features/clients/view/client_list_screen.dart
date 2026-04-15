@@ -170,7 +170,7 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              "No products yet",
+              "No clients yet",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
@@ -180,7 +180,7 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
                   context,
                 ).push(FadeThroughRoute(page: const ClientFormScreen()));
               },
-              child: const Text("Add your first product to get started"),
+              child: const Text("Add your first client to get started"),
             ),
           ],
         ),

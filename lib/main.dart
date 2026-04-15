@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/theme/app_theme.dart';
 import 'package:invoicely/data/local/isar_service.dart';
 import 'package:invoicely/features/clients/view/client_list_screen.dart';
+import 'package:invoicely/features/invoice/view/invoice_list_screen.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/products/view/product_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       title: 'Invoicely',
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
-      home: const ClientListScreen(),
+      home: const InvoiceListScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
