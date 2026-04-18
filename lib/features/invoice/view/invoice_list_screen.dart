@@ -8,6 +8,8 @@ import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/controller/invoice_controller.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
+import 'package:invoicely/features/invoice/view/invoice_form_screen.dart';
+import 'package:invoicely/features/invoice/view/invoice_view_screen.dart';
 
 class InvoiceListScreen extends ConsumerStatefulWidget {
   const InvoiceListScreen({super.key});
@@ -114,9 +116,9 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Navigator.of(
-            //   context,
-            // ).push(FadeThroughRoute());
+            Navigator.of(
+              context,
+            ).push(FadeThroughRoute(page: InvoiceFormScreen()));
           },
           child: Icon(Icons.add),
         ),
@@ -152,9 +154,9 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () {
-                // Navigator.of(
-                //   context,
-                // ).push(FadeThroughRoute(page: ()));
+                Navigator.of(
+                  context,
+                ).push(FadeThroughRoute(page: InvoiceFormScreen()));
               },
               child: const Text("Add your first invoice to get started"),
             ),
@@ -213,7 +215,9 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          // TODO: navigate to view screen
+          Navigator.of(context).push(
+            FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
+          );
         },
         child: IntrinsicHeight(
           child: Row(

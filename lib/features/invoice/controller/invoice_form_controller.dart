@@ -179,7 +179,12 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
   }
 
   void setIssueDate(DateTime date) {
-    state = state.copyWith(issueDate: date);
+    final days = state.terms != null ? _extractDays(state.terms!) : null;
+    final newDueDate = days != null
+        ? date.add(Duration(days: days))
+        : state.dueDate;
+
+    state = state.copyWith(issueDate: date, dueDate: newDueDate);
   }
 
   void setDueDate(DateTime date) {
@@ -190,8 +195,40 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
     state = state.copyWith(notes: notes.isEmpty ? null : notes);
   }
 
-  void setTerms(String terms) {
-    state = state.copyWith(terms: terms.isEmpty ? null : terms);
+  void setTerms(String? terms) {
+    if (terms == null || terms.isEmpty) {
+      state = state.copyWith(terms: null);
+      return;
+    }
+
+    // auto-calculate due date based on term
+    final days = _extractDays(terms);
+    final newDueDate = days != null
+        ? state.issueDate.add(Duration(days: days))
+        : state.dueDate; // keep existing if term has no extractable days
+
+    state = state.copyWith(terms: terms, dueDate: newDueDate);
+  }
+
+  int? _extractDays(String terms) {
+    switch (terms) {
+      case 'Due on receipt':
+        return 0;
+      case 'Net 7':
+        return 7;
+      case 'Net 15':
+        return 15;
+      case 'Net 30':
+        return 30;
+      case 'Net 45':
+        return 45;
+      case 'Net 60':
+        return 60;
+      case '100% upfront':
+        return 0;
+      default:
+        return null;
+    }
   }
 
   void setStatus(InvoiceStatus status) {

@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
+import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/local/isar_product_service.dart';
 import 'package:invoicely/data/repositories/product_repository_impl.dart';
 import 'package:invoicely/features/products/controller/product_controller.dart';
+import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/repository/product_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,3 +37,13 @@ final sortTypeProvider =
       final prefs = ref.watch(sharedPreferencesProvider);
       return ProductSortTypeNotifier(prefs);
     });
+
+final allProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
+  final result = await ref.read(productRepositoryProvider).getProducts();
+  switch (result) {
+    case Success(:final data):
+      return data;
+    case Error(:final failure):
+      throw failure.message;
+  }
+});
