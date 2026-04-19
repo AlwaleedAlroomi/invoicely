@@ -124,7 +124,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   @override
   Future<Result<void>> updateInvoiceStatus(
     InvoiceModel invoice,
-    InvoiceStatus status,
+    InvoiceStatus newStatus,
   ) async {
     try {
       final foundInvoice = await _invoiceService.getInvoiceByRemoteId(
@@ -133,7 +133,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
       if (foundInvoice == null) {
         return Error(AppFailure.database('Invoice not found'));
       }
-      final updated = invoice.copyWith(status: status);
+      final updated = invoice.copyWith(status: newStatus);
       return await _invoiceService.updateInvoice(invoice, updated);
     } catch (e) {
       return Error(AppFailure('Unexpected error updating invoice status: $e'));

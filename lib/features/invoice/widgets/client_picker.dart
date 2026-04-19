@@ -147,7 +147,10 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
                       leading: CircleAvatar(
                         child: Text(client.name[0].toUpperCase()),
                       ),
-                      title: Text(client.name),
+                      title: Text(
+                        client.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       subtitle: Text(client.email),
                       onTap: () {
                         ref

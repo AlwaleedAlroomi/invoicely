@@ -201,7 +201,6 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     if (_searchQuery.isNotEmpty) {
       _applyFiltersAndSort();
     } else {
-      // TODO: fetch invoices
       fetchInvoices();
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/view/invoice_form_screen.dart';
@@ -62,27 +63,30 @@ class _InvoiceViewScreenState extends ConsumerState<InvoiceViewScreen> {
       actions: [
         PopupMenuButton(
           itemBuilder: (_) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'edit',
               child: Row(
                 children: [
                   Icon(Icons.edit_outlined),
                   SizedBox(width: 8),
-                  Text('Edit'),
+                  Text('Edit', style: Theme.of(context).textTheme.titleMedium),
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'duplicate',
               child: Row(
                 children: [
                   Icon(Icons.copy_outlined),
                   SizedBox(width: 8),
-                  Text('Duplicate'),
+                  Text(
+                    'Duplicate',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'delete',
               child: Row(
                 children: [
@@ -98,10 +102,8 @@ class _InvoiceViewScreenState extends ConsumerState<InvoiceViewScreen> {
               case 'edit':
                 final updatedInvoice = await Navigator.of(context)
                     .push<InvoiceModel>(
-                      // replace with your route
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            InvoiceFormScreen(initialInvoice: invoice),
+                      FadeThroughRoute(
+                        page: InvoiceFormScreen(initialInvoice: invoice),
                       ),
                     );
                 if (updatedInvoice != null) {
@@ -592,7 +594,7 @@ class _BottomActions extends ConsumerWidget {
                   onChanged: (value) async {
                     if (value == null) return;
                     await ref
-                        .read(invoiceRepositoryProvider)
+                        .read(invoiceControllerProvider.notifier)
                         .updateInvoiceStatus(invoice, value);
                     // update local state via callback
                     onStatusChanged(invoice.copyWith(status: value));

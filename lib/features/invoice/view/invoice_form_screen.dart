@@ -26,6 +26,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
         controller.loadInvoice(widget.initialInvoice!);
       } else {
         // create mode — generate invoice number
+        controller.reset();
         await controller.init();
       }
     });
@@ -37,8 +38,27 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
         ? await controller.updateInvoice(widget.initialInvoice!)
         : await controller.createInvoice();
 
-    if (success && mounted) {
-      Navigator.pop(context);
+    if (mounted && success) {
+      final state = ref.read(invoiceFormControllerProvider);
+      if (state.error == null) {
+        final invoice = InvoiceModel(
+          invoiceNumber: state.invoiceNumber,
+          issueDate: state.issueDate,
+          dueDate: state.dueDate,
+          taxRate: state.taxRate,
+          subTotal: state.subTotal,
+          taxAmount: state.taxAmount,
+          totalAmount: state.totalAmount,
+          items: state.items,
+          status: state.status,
+          notes: state.notes,
+          terms: state.terms,
+          createdAt: widget.initialInvoice?.createdAt ?? DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        invoice.client.value = widget.initialInvoice?.client.value;
+        Navigator.of(context).pop(invoice);
+      }
     }
   }
 

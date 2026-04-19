@@ -64,7 +64,10 @@ class _ProductPickerSheetState extends ConsumerState<ProductPickerSheet> {
                   itemBuilder: (context, index) {
                     final product = filtered[index];
                     return ListTile(
-                      title: Text(product.name),
+                      title: Text(
+                        product.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       subtitle: Text(
                         '\$${product.unitPrice.toStringAsFixed(2)}',
                       ),

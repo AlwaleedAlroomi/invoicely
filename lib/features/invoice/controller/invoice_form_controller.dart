@@ -313,6 +313,7 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
     state = InvoiceFormState(
       issueDate: DateTime.now(),
       dueDate: DateTime.now().add(const Duration(days: 30)),
+      notes: '',
     );
   }
 }

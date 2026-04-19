@@ -3,8 +3,11 @@ import 'package:invoicely/core/models/sortable_entity.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
 import 'package:isar/isar.dart';
+import 'package:uuid/uuid.dart';
 
 part 'invoice_model.g.dart';
+
+const uuid = Uuid();
 
 @collection
 class InvoiceModel implements SortableEntity {
@@ -34,7 +37,7 @@ class InvoiceModel implements SortableEntity {
   late DateTime updatedAt;
 
   InvoiceModel({
-    this.remoteId,
+    String? remoteId,
     required this.invoiceNumber,
     required this.issueDate,
     required this.dueDate,
@@ -49,7 +52,7 @@ class InvoiceModel implements SortableEntity {
     this.notes,
     this.terms,
     this.isActive = true,
-  });
+  }) : remoteId = remoteId ?? uuid.v4();
 
   InvoiceModel copyWith({
     String? invoiceNumber,

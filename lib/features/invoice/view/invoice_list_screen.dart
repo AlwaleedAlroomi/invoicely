@@ -115,10 +115,11 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(
-              context,
-            ).push(FadeThroughRoute(page: InvoiceFormScreen()));
+          onPressed: () async {
+            await Navigator.of(context).push(
+              FadeThroughRoute(page: InvoiceFormScreen(initialInvoice: null)),
+            );
+            ref.read(invoiceControllerProvider.notifier).fetchInvoices();
           },
           child: Icon(Icons.add),
         ),
@@ -153,10 +154,13 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () {
-                Navigator.of(
+              onPressed: () async {
+                await Navigator.of(
                   context,
                 ).push(FadeThroughRoute(page: InvoiceFormScreen()));
+                if (mounted) {
+                  ref.read(invoiceControllerProvider.notifier).fetchInvoices();
+                }
               },
               child: const Text("Add your first invoice to get started"),
             ),
@@ -204,8 +208,10 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
       case InvoiceStatus.draft:
         statusColor = Colors.grey;
         break;
-      default:
+      case InvoiceStatus.cancelled:
         statusColor = Colors.orange;
+      case InvoiceStatus.sent:
+        statusColor = Colors.blue;
     }
 
     return Card(
@@ -214,10 +220,11 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.of(context).push(
+        onTap: () async {
+          await Navigator.of(context).push(
             FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
           );
+          ref.read(invoiceControllerProvider.notifier).fetchInvoices();
         },
         child: IntrinsicHeight(
           child: Row(
@@ -289,11 +296,8 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
                           ),
                           Text(
                             '\$${invoice.totalAmount.toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).primaryColor,
-                                ),
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

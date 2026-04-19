@@ -22,7 +22,6 @@ class ClientListScreen extends ConsumerStatefulWidget {
 class _ClientListScreenState extends ConsumerState<ClientListScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Future.microtask(() {
       ref.read(clientControllerProvider.notifier).getAllClients();
