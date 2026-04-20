@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
+import 'package:invoicely/features/products/view/product_form_screen.dart';
 
 class ProductPickerSheet extends ConsumerStatefulWidget {
   final ScrollController scrollController;
@@ -47,7 +49,23 @@ class _ProductPickerSheetState extends ConsumerState<ProductPickerSheet> {
             ),
             onChanged: (q) => setState(() => _query = q),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  await Navigator.of(
+                    context,
+                  ).push(FadeThroughRoute(page: ProductFormPage()));
+                  ref.invalidate(allProductsProvider);
+                },
+                label: Text('Add Product'),
+                icon: Icon(Icons.add),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
           Expanded(
             child: productsAsync.when(
               data: (products) {

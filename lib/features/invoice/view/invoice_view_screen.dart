@@ -586,21 +586,21 @@ class _BottomActions extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ...InvoiceStatus.values.map(
-              (status) => ListTile(
+              (status) => RadioListTile<InvoiceStatus>(
                 title: Text(status.name),
-                leading: Radio<InvoiceStatus>(
-                  value: status,
-                  groupValue: invoice.status,
-                  onChanged: (value) async {
-                    if (value == null) return;
-                    await ref
-                        .read(invoiceControllerProvider.notifier)
-                        .updateInvoiceStatus(invoice, value);
-                    // update local state via callback
-                    onStatusChanged(invoice.copyWith(status: value));
-                    if (context.mounted) Navigator.pop(context);
-                  },
-                ),
+                value: status,
+                groupValue: invoice.status,
+                onChanged: (value) async {
+                  if (value == null) return;
+
+                  await ref
+                      .read(invoiceControllerProvider.notifier)
+                      .updateInvoiceStatus(invoice, value);
+
+                  onStatusChanged(invoice.copyWith(status: value));
+
+                  if (context.mounted) Navigator.pop(context);
+                },
               ),
             ),
           ],

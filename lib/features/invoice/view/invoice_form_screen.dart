@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/widgets/client_picker.dart';
@@ -8,8 +9,13 @@ import 'package:invoicely/features/invoice/widgets/item_section.dart';
 import 'package:invoicely/features/invoice/widgets/total_summary_widget.dart';
 
 class InvoiceFormScreen extends ConsumerStatefulWidget {
-  final InvoiceModel? initialInvoice; // null = create, not null = edit
-  const InvoiceFormScreen({super.key, this.initialInvoice});
+  final InvoiceModel? initialInvoice;
+  final ClientModel? preSelectedClient;
+  const InvoiceFormScreen({
+    super.key,
+    this.initialInvoice,
+    this.preSelectedClient,
+  });
 
   @override
   ConsumerState<InvoiceFormScreen> createState() => _InvoiceFormScreenState();
@@ -28,6 +34,9 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
         // create mode — generate invoice number
         controller.reset();
         await controller.init();
+        if (widget.preSelectedClient != null) {
+          controller.selectClient(widget.preSelectedClient!);
+        }
       }
     });
   }

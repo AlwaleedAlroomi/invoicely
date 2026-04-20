@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:invoicely/core/constants/countries.dart';
+import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
+import 'package:invoicely/features/invoice/view/invoice_form_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HeaderSection extends StatelessWidget {
@@ -97,7 +99,13 @@ class QuickActions extends StatelessWidget {
           _ActionButton(
             icon: Icons.receipt_long_outlined,
             label: 'Invoice',
-            onTap: () {}, // navigate to create invoice with client pre-filled
+            onTap: () async {
+              await Navigator.of(context).push(
+                FadeThroughRoute(
+                  page: InvoiceFormScreen(preSelectedClient: client),
+                ),
+              );
+            },
           ),
         ],
       ),

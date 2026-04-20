@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/providers/client_providers.dart';
+import 'package:invoicely/features/clients/view/client_form_screen.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 
 class ClientPickerSection extends StatelessWidget {
@@ -122,7 +124,23 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
             ),
             onChanged: (q) => setState(() => _query = q),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  await Navigator.of(context).push<ClientModel>(
+                    FadeThroughRoute(page: ClientFormScreen()),
+                  );
+                  ref.invalidate(allClientsProvider);
+                },
+                label: Text('Create Client'),
+                icon: Icon(Icons.add),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
           Expanded(
             child: clientsAsync.when(
               data: (clients) {
