@@ -592,7 +592,6 @@ class _BottomActions extends ConsumerWidget {
                 groupValue: invoice.status,
                 onChanged: (value) async {
                   if (value == null) return;
-
                   await ref
                       .read(invoiceControllerProvider.notifier)
                       .updateInvoiceStatus(invoice, value);

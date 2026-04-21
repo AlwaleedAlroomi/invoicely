@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       title: 'Invoicely',
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
-      home: const ClientListScreen(),
+      home: const InvoiceListScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

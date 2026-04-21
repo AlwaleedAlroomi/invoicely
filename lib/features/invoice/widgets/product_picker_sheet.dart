@@ -15,7 +15,6 @@ class ProductPickerSheet extends ConsumerStatefulWidget {
 
 class _ProductPickerSheetState extends ConsumerState<ProductPickerSheet> {
   String _query = '';
-  final int _selectedQty = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -86,13 +85,30 @@ class _ProductPickerSheetState extends ConsumerState<ProductPickerSheet> {
                         product.name,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
+                      trailing: SizedBox(
+                        width: 60,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 14,
+                              color: Colors.grey,
+                            ),
+                            Text(
+                              product.stockQuantity.toString(),
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                      ),
                       subtitle: Text(
                         '\$${product.unitPrice.toStringAsFixed(2)}',
                       ),
                       onTap: () {
                         ref
                             .read(invoiceFormControllerProvider.notifier)
-                            .addItem(product, _selectedQty);
+                            .addItem(product, 1);
                         Navigator.pop(context);
                       },
                     );

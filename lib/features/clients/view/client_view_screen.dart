@@ -6,6 +6,8 @@ import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/providers/client_providers.dart';
 import 'package:invoicely/features/clients/view/client_form_screen.dart';
 import 'package:invoicely/features/clients/widgets/header_section.dart';
+import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
+import 'package:invoicely/features/invoice/widgets/invoice_history.dart';
 
 class ClientViewScreen extends ConsumerStatefulWidget {
   final ClientModel initClient;
@@ -127,8 +129,11 @@ class _ClientViewScreenState extends ConsumerState<ClientViewScreen> {
                   ),
                 ],
               ),
-            RecentInvoicesSection(clientId: client.isarId!),
-            const SizedBox(height: 32),
+            InvoiceHistorySection(
+              invoicesAsync: ref.watch(
+                clientInvoicesProvider(client.remoteId!),
+              ),
+            ),
           ],
         ),
       ),

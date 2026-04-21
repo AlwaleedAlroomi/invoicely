@@ -54,6 +54,18 @@ class IsarInvoiceService {
     }
   }
 
+  Future<List<InvoiceModel>> getInvoiceByClient(String clientRemoteId) async {
+    final invoices = await _isar.invoiceModels
+        .where()
+        .filter()
+        .client((q) => q.remoteIdEqualTo(clientRemoteId))
+        .findAll();
+    for (final invoice in invoices) {
+      await invoice.client.load();
+    }
+    return invoices;
+  }
+
   Future<Result<List<InvoiceModel>>> getAllInvoices() async {
     try {
       final invoices = await _isar.invoiceModels.where().findAll();
@@ -68,17 +80,6 @@ class IsarInvoiceService {
           'An unexpected error occurred fetching products: $e',
         ),
       );
-    }
-  }
-
-  Future<List<InvoiceModel>> getInvoicesByClient(int clientIsarId) async {
-    try {
-      final foundClient = await _isar.clientModels.get(clientIsarId);
-      if (foundClient == null) return [];
-      return await foundClient.invoices.filter().findAll();
-    } catch (e) {
-      debugPrint('Warning: Failed to find invoice for this client: $e');
-      return [];
     }
   }
 

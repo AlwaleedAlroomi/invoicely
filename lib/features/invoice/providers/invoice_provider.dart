@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
+import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/local/isar_invoice_service.dart';
 import 'package:invoicely/data/repositories/invoice_repository_impl.dart';
 import 'package:invoicely/features/invoice/controller/invoice_controller.dart';
 import 'package:invoicely/features/invoice/controller/invoice_form_controller.dart';
+import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/repository/invoice_repository.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 
@@ -32,4 +34,20 @@ final invoiceFormControllerProvider =
     StateNotifierProvider<InvoiceFormController, InvoiceFormState>((ref) {
       final repository = ref.watch(invoiceRepositoryProvider);
       return InvoiceFormController(repository);
+    });
+
+final clientInvoicesProvider =
+    FutureProvider.family<List<InvoiceModel>, String>((
+      ref,
+      clientRemoteId,
+    ) async {
+      final result = await ref
+          .read(invoiceRepositoryProvider)
+          .getInvoicesByClient(clientRemoteId);
+      switch (result) {
+        case Success(:final data):
+          return data;
+        case Error(:final failure):
+          throw failure.message;
+      }
     });

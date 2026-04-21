@@ -75,10 +75,10 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
 
   @override
   Future<Result<List<InvoiceModel>>> getInvoicesByClient(
-    int clientIsarId,
+    String clientRemoteId,
   ) async {
     try {
-      final invoices = await _invoiceService.getInvoicesByClient(clientIsarId);
+      final invoices = await _invoiceService.getInvoiceByClient(clientRemoteId);
       if (invoices.isEmpty) {
         return Success([]);
       }

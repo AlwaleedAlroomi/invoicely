@@ -81,7 +81,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     );
     switch (result) {
       case Success<void> _:
-        fetchInvoices();
+        // fetchInvoices();
         break;
       case Error<void> e:
         state = state.copyWith(
@@ -150,9 +150,9 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     }
   }
 
-  Future<void> getInvoicesByClient(int clientIsarId) async {
+  Future<void> getInvoicesByClient(String clientRemoteId) async {
     state = state.copyWith(isLoading: true, failure: null);
-    final result = await _invoiceRepository.getInvoicesByClient(clientIsarId);
+    final result = await _invoiceRepository.getInvoicesByClient(clientRemoteId);
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
         state = state.copyWith(

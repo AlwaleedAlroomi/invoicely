@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/widgets/product_picker_sheet.dart';
+import 'package:invoicely/features/products/providers/product_providers.dart';
 
 class ItemsSection extends ConsumerWidget {
   const ItemsSection({super.key});
@@ -94,6 +95,18 @@ class _ItemTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(invoiceFormControllerProvider.notifier);
+    final productsAsync = ref.watch(allProductsProvider);
+    final product = productsAsync
+        .whenData(
+          (products) => products.firstWhere(
+            (p) => p.isarId.toString() == item.productId,
+            // orElse: () => null,
+          ),
+        )
+        .value;
+
+    final atMaxStock =
+        product != null && item.quantity >= product.stockQuantity;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -113,6 +126,25 @@ class _ItemTile extends ConsumerWidget {
                     '\$${item.unitPrice.toStringAsFixed(2)} × ${item.quantity}',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
+                  SizedBox(width: 8),
+                  if (product != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.inventory_2_outlined,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${product.stockQuantity} in stock',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -138,12 +170,20 @@ class _ItemTile extends ConsumerWidget {
                   child: Text('${item.quantity}'),
                 ),
                 InkWell(
-                  onTap: () =>
-                      controller.updateItemQuantity(index, item.quantity + 1),
+                  onTap: atMaxStock
+                      ? null
+                      : () => controller.updateItemQuantity(
+                          index,
+                          item.quantity + 1,
+                        ),
                   borderRadius: BorderRadius.circular(4),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(4),
-                    child: Icon(Icons.add, size: 16),
+                    child: Icon(
+                      Icons.add,
+                      size: 16,
+                      color: atMaxStock ? Colors.transparent : null,
+                    ),
                   ),
                 ),
               ],
