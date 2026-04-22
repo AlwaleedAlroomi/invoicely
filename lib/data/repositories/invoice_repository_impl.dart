@@ -89,6 +89,21 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
+  Future<Result<List<InvoiceModel>>> getInvoicesByProduct(
+    String prodRemoteId,
+  ) async {
+    try {
+      final invoices = await _invoiceService.getInvoiceByProduct(prodRemoteId);
+      if (invoices.isEmpty) {
+        return Success([]);
+      }
+      return Success(invoices);
+    } catch (e) {
+      return Error(AppFailure('Unexpected error fetching invoices: $e'));
+    }
+  }
+
+  @override
   Future<Result<List<InvoiceModel>>> getInvoicesByStatus(
     InvoiceStatus status,
   ) async {

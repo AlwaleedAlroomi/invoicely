@@ -7,6 +7,7 @@ import 'package:invoicely/features/invoice/widgets/client_picker.dart';
 import 'package:invoicely/features/invoice/widgets/date_section.dart';
 import 'package:invoicely/features/invoice/widgets/item_section.dart';
 import 'package:invoicely/features/invoice/widgets/total_summary_widget.dart';
+import 'package:invoicely/features/products/providers/product_providers.dart';
 
 class InvoiceFormScreen extends ConsumerStatefulWidget {
   final InvoiceModel? initialInvoice;
@@ -66,6 +67,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
           updatedAt: DateTime.now(),
         );
         invoice.client.value = widget.initialInvoice?.client.value;
+        ref.invalidate(allProductsProvider);
         Navigator.of(context).pop(invoice);
       }
     }

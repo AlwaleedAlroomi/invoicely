@@ -130,9 +130,9 @@ class _ClientViewScreenState extends ConsumerState<ClientViewScreen> {
                 ],
               ),
             InvoiceHistorySection(
-              invoicesAsync: ref.watch(
-                clientInvoicesProvider(client.remoteId!),
-              ),
+              provider: clientInvoicesProvider(client.remoteId!),
+              title: 'Invoice History',
+              seeAllTitle: '${client.name}\'s Invoices',
             ),
           ],
         ),

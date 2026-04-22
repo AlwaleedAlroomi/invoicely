@@ -5,21 +5,23 @@ import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/view/invoice_view_screen.dart';
+import 'package:invoicely/features/invoice/widgets/filtered_invoice_list.dart';
 
 class InvoiceHistorySection extends ConsumerWidget {
-  final AsyncValue<List<InvoiceModel>> invoicesAsync;
+  final ProviderListenable<AsyncValue<List<InvoiceModel>>> provider;
   final String title;
-  final VoidCallback? onSeeAll;
+  final String seeAllTitle;
 
   const InvoiceHistorySection({
     super.key,
-    required this.invoicesAsync,
+    required this.provider,
     this.title = 'Invoice History',
-    this.onSeeAll,
+    this.seeAllTitle = 'All Invoices',
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final invoicesAsync = ref.watch(provider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
@@ -46,8 +48,24 @@ class InvoiceHistorySection extends ConsumerWidget {
                   ),
                 ],
               ),
-              if (onSeeAll != null)
-                TextButton(onPressed: onSeeAll, child: const Text('See all')),
+              invoicesAsync
+                      .whenData(
+                        (invoices) => invoices.length > 3
+                            ? TextButton(
+                                onPressed: () => Navigator.of(context).push(
+                                  FadeThroughRoute(
+                                    page: FilteredInvoiceListScreen(
+                                      title: seeAllTitle,
+                                      provider: provider,
+                                    ),
+                                  ),
+                                ),
+                                child: Text('See all (${invoices.length})'),
+                              )
+                            : const SizedBox.shrink(),
+                      )
+                      .value ??
+                  const SizedBox.shrink(),
             ],
           ),
           const SizedBox(height: 8),
@@ -68,7 +86,7 @@ class InvoiceHistorySection extends ConsumerWidget {
               final preview = invoices.take(3).toList();
               return Column(
                 children: preview
-                    .map((invoice) => _InvoiceHistoryTile(invoice: invoice))
+                    .map((invoice) => InvoiceHistoryTile(invoice: invoice))
                     .toList(),
               );
             },
@@ -87,9 +105,9 @@ class InvoiceHistorySection extends ConsumerWidget {
   }
 }
 
-class _InvoiceHistoryTile extends ConsumerWidget {
+class InvoiceHistoryTile extends ConsumerWidget {
   final InvoiceModel invoice;
-  const _InvoiceHistoryTile({required this.invoice});
+  const InvoiceHistoryTile({super.key, required this.invoice});
 
   Color get _statusColor {
     switch (invoice.status) {
@@ -116,9 +134,13 @@ class _InvoiceHistoryTile extends ConsumerWidget {
           await Navigator.of(context).push(
             FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
           );
-          ref.invalidate(
-            clientInvoicesProvider(invoice.client.value!.remoteId!),
-          );
+          final clientRemoteId = invoice.client.value?.remoteId;
+          if (clientRemoteId != null) {
+            ref.invalidate(clientInvoicesProvider(clientRemoteId));
+          }
+          for (final item in invoice.items) {
+            ref.invalidate(productInvoicesProvider(item.productId));
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(12),

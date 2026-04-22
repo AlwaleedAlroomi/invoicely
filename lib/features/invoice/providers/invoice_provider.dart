@@ -51,3 +51,19 @@ final clientInvoicesProvider =
           throw failure.message;
       }
     });
+
+final productInvoicesProvider =
+    FutureProvider.family<List<InvoiceModel>, String>((
+      ref,
+      prodRemoteId,
+    ) async {
+      final result = await ref
+          .read(invoiceRepositoryProvider)
+          .getInvoicesByProduct(prodRemoteId);
+      switch (result) {
+        case Success(:final data):
+          return data;
+        case Error(:final failure):
+          throw failure.message;
+      }
+    });

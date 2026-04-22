@@ -15,6 +15,7 @@ abstract class InvoiceRepository {
   Future<Result<List<InvoiceModel>>> getAllInvoices();
   Future<Result<List<InvoiceModel>>> getInvoicesByClient(String clientRemoteId);
   Future<Result<List<InvoiceModel>>> getInvoicesByStatus(InvoiceStatus status);
+  Future<Result<List<InvoiceModel>>> getInvoicesByProduct(String prodRemoteId);
   // update
   Future<Result<InvoiceModel>> updateInvoice(
     InvoiceModel invoice,

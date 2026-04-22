@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
+import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
+import 'package:invoicely/features/invoice/widgets/invoice_history.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/view/product_form_screen.dart';
 import 'package:invoicely/features/products/widgets/product_image_qr_widget.dart';
@@ -115,18 +117,6 @@ class _ProductViewScreenState extends ConsumerState<ProductViewScreen> {
             const Divider(),
 
             const SizedBox(height: 12),
-
-            // ================= HISTORY =================
-            Text(
-              "History",
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-
-            // TODO: add invoices history for the product
-            const SizedBox(height: 8),
-
             ListTile(
               leading: const Icon(Icons.history),
               title: const Text("Product created"),
@@ -143,6 +133,15 @@ class _ProductViewScreenState extends ConsumerState<ProductViewScreen> {
                 currentProduct.lastUpdated.toString().substring(0, 10),
               ),
             ),
+            // ================= HISTORY =================
+            InvoiceHistorySection(
+              provider: productInvoicesProvider(
+                widget.product.isarId.toString(),
+              ),
+              title: 'Used in Invoices',
+              seeAllTitle: '${widget.product.name} Invoices',
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
