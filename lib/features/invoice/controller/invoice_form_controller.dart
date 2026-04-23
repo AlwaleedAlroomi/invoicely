@@ -273,7 +273,10 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
     }
   }
 
-  Future<bool> updateInvoice(InvoiceModel original) async {
+  Future<bool> updateInvoice(
+    InvoiceModel original,
+    ClientModel? newClient,
+  ) async {
     if (!state.isValid) {
       state = state.copyWith(error: 'Please fill all required fields');
       return false;
@@ -294,6 +297,9 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
       notes: state.notes,
       terms: state.terms,
     );
+    if (original.client.value != newClient && newClient != null) {
+      updated.client.value = newClient;
+    }
 
     final result = await _repo.updateInvoice(original, updated);
 

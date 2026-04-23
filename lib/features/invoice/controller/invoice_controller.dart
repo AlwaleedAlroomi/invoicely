@@ -7,7 +7,6 @@ import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/repository/invoice_repository.dart';
-import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class InvoiceListState {
@@ -15,12 +14,14 @@ class InvoiceListState {
   final List<InvoiceModel> invoices;
   final AppFailure? failure;
   final InvoiceModel? selectedInvoice;
+  final InvoiceStatus? selectedStatus;
 
   InvoiceListState({
     required this.isLoading,
     required this.invoices,
     this.failure,
     this.selectedInvoice,
+    this.selectedStatus,
   });
 
   InvoiceListState copyWith({
@@ -28,21 +29,28 @@ class InvoiceListState {
     List<InvoiceModel>? invoices,
     AppFailure? failure,
     InvoiceModel? selectedInvoice,
+    Object? selectedStatus = _sentinel,
   }) {
     return InvoiceListState(
       isLoading: isLoading ?? this.isLoading,
       invoices: invoices ?? this.invoices,
       failure: failure,
       selectedInvoice: selectedInvoice,
+      selectedStatus: selectedStatus == _sentinel
+          ? this.selectedStatus
+          : (selectedStatus as InvoiceStatus?),
     );
   }
 }
+
+const _sentinel = Object();
 
 class InvoiceController extends StateNotifier<InvoiceListState> {
   final InvoiceRepository _invoiceRepository;
   final Ref ref;
   List<InvoiceModel> _allInvoices = [];
   String _searchQuery = '';
+  InvoiceStatus? _filterStatus;
   bool _showActiveOnly = true;
 
   InvoiceController(this._invoiceRepository, this.ref)
@@ -170,26 +178,40 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     }
   }
 
+  void setStatusFilter(InvoiceStatus? status) {
+    _filterStatus = status;
+    state = state.copyWith(selectedStatus: status);
+    _applyFiltersAndSort();
+  }
+
   void _applyFiltersAndSort() {
     if (_allInvoices.isEmpty) {
       state = state.copyWith(invoices: [], isLoading: false);
     }
-    final sortType = ref.read(sortTypeProvider);
+    final sortType = ref.read(invoiceSortTypeProvider);
 
     List<InvoiceModel> filtered;
 
     if (_showActiveOnly) {
-      filtered = _allInvoices.where((p) => p.isActive == true).toList();
+      filtered = _allInvoices
+          .where((invoice) => invoice.isActive == true)
+          .toList();
     } else {
       filtered = List.from(_allInvoices); // active + deleted
     }
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
 
-      // filtered = filtered.where((invoice) {
-      //   return invoice.displayName.toLowerCase().contains(query) ||
-      //       (invoice.sku?.toLowerCase().contains(query) ?? false);
-      // }).toList();
+      filtered = filtered.where((invoice) {
+        return invoice.displayName.toLowerCase().contains(query) ||
+            invoice.client.value!.name.toLowerCase().contains(query) ||
+            invoice.totalAmount.toString().contains(query);
+      }).toList();
+    }
+    if (_filterStatus != null) {
+      filtered = filtered
+          .where((invoice) => invoice.status == _filterStatus)
+          .toList();
     }
     filtered = sortType.sort(filtered);
 

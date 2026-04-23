@@ -43,13 +43,16 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
   }
 
   Future<void> _onSubmit() async {
+    final state = ref.read(invoiceFormControllerProvider);
     final controller = ref.read(invoiceFormControllerProvider.notifier);
     final success = widget.initialInvoice != null
-        ? await controller.updateInvoice(widget.initialInvoice!)
+        ? await controller.updateInvoice(
+            widget.initialInvoice!,
+            state.selectedClient,
+          )
         : await controller.createInvoice();
 
     if (mounted && success) {
-      final state = ref.read(invoiceFormControllerProvider);
       if (state.error == null) {
         final invoice = InvoiceModel(
           invoiceNumber: state.invoiceNumber,
@@ -66,7 +69,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
           createdAt: widget.initialInvoice?.createdAt ?? DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        invoice.client.value = widget.initialInvoice?.client.value;
+        invoice.client.value = state.selectedClient;
         ref.invalidate(allProductsProvider);
         Navigator.of(context).pop(invoice);
       }

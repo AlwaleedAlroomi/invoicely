@@ -128,7 +128,7 @@ class IsarInvoiceService {
     InvoiceModel updated,
   ) async {
     try {
-      updated.client.value = original.client.value;
+      // updated.client.value = original.client.value;
       await _isar.writeTxn(() async {
         await _isar.invoiceModels.put(updated);
         await updated.client.save();

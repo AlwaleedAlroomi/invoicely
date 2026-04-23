@@ -96,7 +96,7 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
               padding: const EdgeInsets.all(12),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: '', // TODO: implement search func
+                  hintText: 'Search by invoice/client name or total amount',
                   prefixIcon: Icon(Icons.search),
                 ),
                 onChanged: (value) {
@@ -106,6 +106,7 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
                 },
               ),
             ),
+            buildStatusFilterBar(ref),
             Expanded(
               child: AnimatedSwitcher(
                 duration: Duration(milliseconds: 400),
@@ -308,6 +309,67 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildStatusFilterBar(WidgetRef ref) {
+    final state = ref.watch(invoiceControllerProvider);
+    final notifier = ref.read(invoiceControllerProvider.notifier);
+
+    Color getStatusColor(InvoiceStatus status) {
+      switch (status) {
+        case InvoiceStatus.paid:
+          return Colors.green;
+        case InvoiceStatus.overdue:
+          return Colors.red;
+        case InvoiceStatus.draft:
+          return Colors.grey;
+        case InvoiceStatus.cancelled:
+          return Colors.orange;
+        case InvoiceStatus.sent:
+          return Colors.blue;
+      }
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          FilterChip(
+            label: const Text("All"),
+            selected: state.selectedStatus == null,
+            onSelected: (value) {
+              notifier.setStatusFilter(null);
+            },
+          ),
+          const SizedBox(width: 8),
+          ...InvoiceStatus.values.map((status) {
+            final isSelected = state.selectedStatus == status;
+            final color = getStatusColor(status);
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(status.name.toUpperCase()),
+                selected: isSelected,
+                onSelected: (value) {
+                  notifier.setStatusFilter(status);
+                },
+                selectedColor: color.withValues(alpha: 0.2),
+                side: BorderSide(
+                  color: isSelected ? color : Colors.grey[300]!,
+                  width: isSelected ? 1.5 : 1,
+                ),
+                labelStyle: TextStyle(
+                  color: isSelected ? color : Colors.grey[600],
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 12,
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
