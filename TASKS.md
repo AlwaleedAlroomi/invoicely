@@ -45,6 +45,7 @@ The "Skeleton" of Invoicely. Managing navigation, global settings, and the dashb
 ### 📄 Document Generation
 - [ ] **PDF Engine**: Implement `pdf` and `printing` packages.
 - [ ] **Invoice Templates**: Design a professional PDF layout.
+- [ ] **Preview The File**: Preview the generated invoice pdf before printing it
 - [ ] **Sharing**: Add native sharing functionality for PDF files.
 
 ### ⚙️ System & Settings
