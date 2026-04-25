@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/core/services/pdf_generator.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/invoice/view/invoice_form_screen.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 
 class InvoiceViewScreen extends ConsumerStatefulWidget {
   final InvoiceModel initInvoice;
@@ -555,8 +558,38 @@ class _BottomActions extends ConsumerWidget {
             Expanded(
               flex: 2,
               child: ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   // PDF generation — next feature
+                  final pdf = await generateInvoicePDF(invoice);
+                  if (!context.mounted) return;
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) {
+                      return AlertDialog(
+                        title: Text('PDF Preview'),
+                        content: SizedBox(
+                          width: double.maxFinite,
+                          height: 400,
+                          child: PdfPreview(
+                            build: (format) => pdf.save(),
+                            allowPrinting: true,
+                            allowSharing: true,
+                            canChangeOrientation: false,
+                            canChangePageFormat: false,
+                            initialPageFormat: PdfPageFormat.a4,
+                            pdfFileName:
+                                '${invoice.client.value!.displayName} invoice - ${invoice.displayName}.pdf',
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: Text('Close'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
                 icon: const Icon(Icons.picture_as_pdf_outlined),
                 label: const Text('Download PDF'),
@@ -567,6 +600,10 @@ class _BottomActions extends ConsumerWidget {
       ),
     );
   }
+
+  // void showPDFPreview(pw.Document pdf) {
+  //   showDialog(context: context, builder: ());
+  // }
 
   void _showStatusSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
@@ -587,7 +624,10 @@ class _BottomActions extends ConsumerWidget {
             const SizedBox(height: 12),
             ...InvoiceStatus.values.map(
               (status) => RadioListTile<InvoiceStatus>(
-                title: Text(status.name),
+                title: Text(
+                  status.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 value: status,
                 groupValue: invoice.status,
                 onChanged: (value) async {
@@ -596,8 +636,9 @@ class _BottomActions extends ConsumerWidget {
                       .read(invoiceControllerProvider.notifier)
                       .updateInvoiceStatus(invoice, value);
 
-                  onStatusChanged(invoice.copyWith(status: value));
-
+                  final updatedInvoice = invoice.copyWith(status: value);
+                  updatedInvoice.client.value = invoice.client.value;
+                  onStatusChanged(updatedInvoice);
                   if (context.mounted) Navigator.pop(context);
                 },
               ),

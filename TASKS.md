@@ -43,10 +43,10 @@ The "Skeleton" of Invoicely. Managing navigation, global settings, and the dashb
 - [x] Stock level tracking (Decrease stock when an invoice is finalized).
 
 ### 📄 Document Generation
-- [ ] **PDF Engine**: Implement `pdf` and `printing` packages.
+- [x] **PDF Engine**: Implement `pdf` and `printing` packages.
 - [ ] **Invoice Templates**: Design a professional PDF layout.
-- [ ] **Preview The File**: Preview the generated invoice pdf before printing it
-- [ ] **Sharing**: Add native sharing functionality for PDF files.
+- [x] **Preview The File**: Preview the generated invoice pdf before printing it
+- [x] **Sharing**: Add native sharing functionality for PDF files.
 
 ### ⚙️ System & Settings
 - [x] **Life System Integration**: Ensure compatibility with existing productivity workflow.

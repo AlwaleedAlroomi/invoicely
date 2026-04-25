@@ -18,4 +18,20 @@ class InvoiceItemModel {
     required this.quantity,
     required this.total,
   });
+
+  String getIndex(int index) {
+    switch (index) {
+      case 0:
+        return productId;
+      case 1:
+        return productName;
+      case 2:
+        return unitPrice.toString();
+      case 3:
+        return quantity.toString();
+      case 4:
+        return total.toString();
+    }
+    return '';
+  }
 }
