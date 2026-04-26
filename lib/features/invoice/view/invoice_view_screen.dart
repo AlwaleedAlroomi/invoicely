@@ -560,7 +560,10 @@ class _BottomActions extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   // PDF generation — next feature
-                  final pdf = await generateInvoicePDF(invoice);
+                  final pdf = await InvoicePDFService().generateInvoicePDF(
+                    invoice,
+                  );
+
                   if (!context.mounted) return;
                   showDialog(
                     context: context,
@@ -576,15 +579,66 @@ class _BottomActions extends ConsumerWidget {
                             allowSharing: true,
                             canChangeOrientation: false,
                             canChangePageFormat: false,
+                            canDebug: false,
                             initialPageFormat: PdfPageFormat.a4,
                             pdfFileName:
                                 '${invoice.client.value!.displayName} invoice - ${invoice.displayName}.pdf',
                           ),
                         ),
                         actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(dialogContext),
-                            child: Text('Close'),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: TextButton(
+                                  onPressed: () => Navigator.pop(dialogContext),
+                                  child: Text('Close'),
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    try {
+                                      final path = await InvoicePDFService()
+                                          .savePDF(
+                                            pdf,
+                                            '${invoice.client.value!.displayName} invoice - ${invoice.displayName}',
+                                          );
+                                      if (!context.mounted) return;
+                                      Navigator.pop(dialogContext);
+                                      if (context.mounted && path != null) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'PDF saved to ${path.split('/').reversed.take(2).toList().reversed.join('/')}',
+                                            ),
+                                            showCloseIcon: true,
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Failed to save: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.save_outlined),
+                                  label: const Text('Save'),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       );

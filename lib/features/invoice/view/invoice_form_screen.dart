@@ -79,6 +79,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(invoiceFormControllerProvider);
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -143,7 +144,14 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: isKeyboardOpen
+              ? MediaQuery.of(context).viewInsets.bottom + 8
+              : 16,
+        ),
         child: ElevatedButton(
           onPressed: state.isLoading ? null : _onSubmit,
           child: state.isLoading
