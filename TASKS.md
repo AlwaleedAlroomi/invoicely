@@ -47,7 +47,7 @@ The "Skeleton" of Invoicely. Managing navigation, global settings, and the dashb
 - [x] **Invoice Templates**: Design a professional PDF layout.
 - [x] **Preview The File**: Preview the generated invoice pdf before printing it
 - [x] **Sharing**: Add native sharing functionality for PDF files.
-- [ ] **RTL languages**: Handle RTL text(Arabic).
+- [x] **RTL languages**: Handle RTL text(Arabic).
 
 ### ⚙️ System & Settings
 - [x] **Life System Integration**: Ensure compatibility with existing productivity workflow.

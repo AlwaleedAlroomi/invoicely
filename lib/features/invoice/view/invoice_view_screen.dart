@@ -655,10 +655,6 @@ class _BottomActions extends ConsumerWidget {
     );
   }
 
-  // void showPDFPreview(pw.Document pdf) {
-  //   showDialog(context: context, builder: ());
-  // }
-
   void _showStatusSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,

@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:arabic_reshaper/arabic_reshaper.dart';
 
 class InvoicePDFService {
   Future<String?> savePDF(pw.Document pdf, String fileName) async {
@@ -22,6 +24,37 @@ class InvoicePDFService {
   Future<pw.Document> generateInvoicePDF(InvoiceModel invoice) async {
     final pdf = pw.Document();
     final client = invoice.client.value;
+    final pw.Font arabicFont = pw.Font.ttf(
+      await rootBundle.load("assets/fonts/Amiri-Regular.ttf"),
+    );
+    final pw.Font arabicFontBold = pw.Font.ttf(
+      await rootBundle.load("assets/fonts/Amiri-Bold.ttf"),
+    );
+
+    // Text Format
+    pw.Widget buildText(
+      String? text, {
+      pw.TextStyle? style,
+      bool isBold = false,
+    }) {
+      final String safeText = text ?? 'N/A';
+
+      final bool ar = safeText.contains(RegExp(r'[\u0600-\u06FF]'));
+
+      // Reshape only if Arabic
+      final String processedText = ar
+          ? ArabicReshaper.instance.reshape(safeText)
+          : safeText;
+
+      return pw.Text(
+        processedText,
+        textDirection: ar ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        textAlign: ar ? pw.TextAlign.right : pw.TextAlign.left,
+        style: (style ?? pw.TextStyle()).copyWith(
+          font: ar ? (isBold ? arabicFontBold : arabicFont) : null,
+        ),
+      );
+    }
 
     // colors
     const primaryColor = PdfColor.fromInt(0xFF1A1A2E);
@@ -63,21 +96,15 @@ class InvoicePDFService {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text(
+                buildText(
                   'Invoicely',
-                  style: pw.TextStyle(
-                    color: PdfColors.white,
-                    fontSize: 28,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
+                  isBold: true,
+                  style: pw.TextStyle(fontSize: 28, color: PdfColors.white),
                 ),
                 pw.SizedBox(height: 4),
-                pw.Text(
+                buildText(
                   'Professional Invoice',
-                  style: const pw.TextStyle(
-                    color: PdfColors.white,
-                    fontSize: 11,
-                  ),
+                  style: pw.TextStyle(fontSize: 11, color: PdfColors.white),
                 ),
               ],
             ),
@@ -199,13 +226,10 @@ class InvoicePDFService {
                     ),
                   ),
                   pw.SizedBox(height: 8),
-                  pw.Text(
-                    client?.name ?? 'N/A',
-                    style: pw.TextStyle(
-                      fontSize: 13,
-                      fontWeight: pw.FontWeight.bold,
-                      color: primaryColor,
-                    ),
+                  buildText(
+                    client?.name ?? '',
+                    isBold: true,
+                    style: pw.TextStyle(fontSize: 13, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   if (client?.email != null)
@@ -220,27 +244,32 @@ class InvoicePDFService {
                     ),
                   pw.SizedBox(height: 4),
                   if (client?.addressLine1 != null)
-                    pw.Text(
-                      client!.addressLine1!,
-                      style: const pw.TextStyle(fontSize: 10, color: textGrey),
+                    buildText(
+                      client!.addressLine1,
+                      style: pw.TextStyle(fontSize: 10, color: textGrey),
                     ),
                   if (client?.addressLine2 != null)
-                    pw.Text(
-                      client!.addressLine2!,
-                      style: const pw.TextStyle(fontSize: 10, color: textGrey),
+                    buildText(
+                      client!.addressLine2,
+                      style: pw.TextStyle(fontSize: 10, color: textGrey),
                     ),
-                  pw.Text(
-                    [
-                      client?.city,
-                      client?.state,
-                      client?.zipCode,
-                    ].whereType<String>().join(', '),
-                    style: const pw.TextStyle(fontSize: 10, color: textGrey),
+
+                  buildText(
+                    client?.city ?? '',
+                    style: pw.TextStyle(fontSize: 10, color: textGrey),
+                  ),
+                  buildText(
+                    client?.state ?? '',
+                    style: pw.TextStyle(fontSize: 10, color: textGrey),
+                  ),
+                  buildText(
+                    client?.zipCode ?? '',
+                    style: pw.TextStyle(fontSize: 10, color: textGrey),
                   ),
                   if (client?.country != null)
-                    pw.Text(
-                      client!.country!,
-                      style: const pw.TextStyle(fontSize: 10, color: textGrey),
+                    buildText(
+                      client!.country,
+                      style: pw.TextStyle(fontSize: 10, color: textGrey),
                     ),
                 ],
               ),
@@ -371,13 +400,10 @@ class InvoicePDFService {
                   children: [
                     pw.Expanded(
                       flex: 4,
-                      child: pw.Text(
+                      child: buildText(
                         item.productName,
-                        style: pw.TextStyle(
-                          fontSize: 10,
-                          fontWeight: pw.FontWeight.bold,
-                          color: primaryColor,
-                        ),
+                        isBold: true,
+                        style: pw.TextStyle(fontSize: 10, color: primaryColor),
                       ),
                     ),
                     pw.Expanded(
@@ -446,9 +472,9 @@ class InvoicePDFService {
                       ),
                     ),
                     pw.SizedBox(height: 6),
-                    pw.Text(
+                    buildText(
                       invoice.notes!,
-                      style: const pw.TextStyle(
+                      style: pw.TextStyle(
                         fontSize: 9,
                         color: textGrey,
                         lineSpacing: 2,
