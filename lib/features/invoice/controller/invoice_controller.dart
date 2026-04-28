@@ -13,6 +13,9 @@ class InvoiceListState {
   final bool isLoading;
   final List<InvoiceModel> invoices;
   final AppFailure? failure;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int currentPage;
   final InvoiceModel? selectedInvoice;
   final InvoiceStatus? selectedStatus;
 
@@ -20,6 +23,9 @@ class InvoiceListState {
     required this.isLoading,
     required this.invoices,
     this.failure,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+    this.currentPage = 0,
     this.selectedInvoice,
     this.selectedStatus,
   });
@@ -28,6 +34,9 @@ class InvoiceListState {
     bool? isLoading,
     List<InvoiceModel>? invoices,
     AppFailure? failure,
+    bool? isLoadingMore,
+    bool? hasMore,
+    int? currentPage,
     InvoiceModel? selectedInvoice,
     Object? selectedStatus = _sentinel,
   }) {
@@ -35,6 +44,9 @@ class InvoiceListState {
       isLoading: isLoading ?? this.isLoading,
       invoices: invoices ?? this.invoices,
       failure: failure,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
       selectedInvoice: selectedInvoice,
       selectedStatus: selectedStatus == _sentinel
           ? this.selectedStatus
@@ -52,6 +64,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
   String _searchQuery = '';
   InvoiceStatus? _filterStatus;
   bool _showActiveOnly = true;
+  static const int _pagesize = 20;
 
   InvoiceController(this._invoiceRepository, this.ref)
     : super(InvoiceListState(isLoading: false, invoices: [], failure: null)) {
@@ -61,12 +74,24 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
   }
 
   Future<void> fetchInvoices() async {
-    state = state.copyWith(isLoading: true, failure: null);
-    final result = await _invoiceRepository.getAllInvoices();
+    state = state.copyWith(
+      isLoading: true,
+      failure: null,
+      currentPage: 0,
+      hasMore: true,
+    );
+    // final result = await _invoiceRepository.getAllInvoices();
+    final result = await _invoiceRepository.getInvoicesPaginated(0, _pagesize);
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
         _allInvoices = fetched.data;
-        _applyFiltersAndSort();
+        state = state.copyWith(
+          isLoading: false,
+          hasMore: fetched.data.length == _pagesize,
+          currentPage: 0,
+          invoices: fetched.data,
+        );
+        // _applyFiltersAndSort();
         break;
       case Error<List<InvoiceModel>> e:
         state = state.copyWith(
@@ -75,6 +100,34 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
           invoices: state.invoices.isEmpty ? const [] : state.invoices,
         );
         break;
+    }
+  }
+
+  Future<void> fetchMore() async {
+    if (!state.hasMore || state.isLoadingMore) return;
+    state = state.copyWith(isLoadingMore: true);
+    final nextPage = state.currentPage + 1;
+    final result = await _invoiceRepository.getInvoicesPaginated(
+      nextPage,
+      _pagesize,
+    );
+
+    switch (result) {
+      case Success<List<InvoiceModel>> fetched:
+        _allInvoices = [..._allInvoices, ...fetched.data];
+        state = state.copyWith(
+          invoices: [...state.invoices, ...fetched.data],
+          isLoadingMore: false,
+          hasMore: fetched.data.length == _pagesize,
+          currentPage: nextPage,
+        );
+      // _applyFiltersAndSort();
+      case Error<List<InvoiceModel>> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          invoices: state.invoices.isEmpty ? const [] : state.invoices,
+        );
     }
   }
 

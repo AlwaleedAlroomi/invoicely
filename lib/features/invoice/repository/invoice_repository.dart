@@ -13,6 +13,7 @@ abstract class InvoiceRepository {
   // read
   Future<Result<InvoiceModel?>> getInvoiceByRemoteId(String remoteId);
   Future<Result<List<InvoiceModel>>> getAllInvoices();
+  Future<Result<List<InvoiceModel>>> getInvoicesPaginated(int page, int limit);
   Future<Result<List<InvoiceModel>>> getInvoicesByClient(String clientRemoteId);
   Future<Result<List<InvoiceModel>>> getInvoicesByStatus(InvoiceStatus status);
   Future<Result<List<InvoiceModel>>> getInvoicesByProduct(String prodRemoteId);

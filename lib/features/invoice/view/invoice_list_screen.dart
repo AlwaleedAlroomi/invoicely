@@ -19,12 +19,27 @@ class InvoiceListScreen extends ConsumerStatefulWidget {
 }
 
 class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(invoiceControllerProvider.notifier).fetchInvoices();
     });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        ref.read(invoiceControllerProvider.notifier).fetchMore();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -173,9 +188,17 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
   }
 
   Widget _buildListView(List<InvoiceModel> invoices) {
+    final state = ref.watch(invoiceControllerProvider);
     return ListView.builder(
-      itemCount: invoices.length,
+      controller: _scrollController,
+      itemCount: invoices.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == invoices.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
         return TweenAnimationBuilder(
           tween: Tween(begin: 0.0, end: 1.0),
           duration: Duration(milliseconds: 400 + (index * 50).clamp(0, 300)),

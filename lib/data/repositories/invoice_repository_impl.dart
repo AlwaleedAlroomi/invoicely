@@ -59,6 +59,14 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
+  Future<Result<List<InvoiceModel>>> getInvoicesPaginated(
+    int page,
+    int limit,
+  ) async {
+    return await _invoiceService.getInvoicesPaginated(page, limit);
+  }
+
+  @override
   Future<Result<InvoiceModel?>> getInvoiceByRemoteId(String remoteId) async {
     try {
       final invoice = await _invoiceService.getInvoiceByRemoteId(remoteId);

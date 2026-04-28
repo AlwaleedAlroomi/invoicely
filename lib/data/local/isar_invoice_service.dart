@@ -110,6 +110,31 @@ class IsarInvoiceService {
     }
   }
 
+  Future<Result<List<InvoiceModel>>> getInvoicesPaginated(
+    int page,
+    int limit,
+  ) async {
+    try {
+      final invoices = await _isar.invoiceModels
+          .where()
+          .sortByDisplayNameDesc()
+          .offset(page * limit)
+          .limit(limit)
+          .findAll();
+      return Success(invoices);
+    } on IsarError catch (e) {
+      return Error(
+        AppFailure.database('Isar error fetching invoices: ${e.message}'),
+      );
+    } catch (e) {
+      return Error(
+        AppFailure.database(
+          'An unexpected error occurred fetching products: $e',
+        ),
+      );
+    }
+  }
+
   Future<List<InvoiceModel>> getInvoicesByStatus(InvoiceStatus status) async {
     final invoices = await _isar.invoiceModels
         .where()
