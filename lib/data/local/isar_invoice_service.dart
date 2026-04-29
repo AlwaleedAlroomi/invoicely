@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/local/isar_service.dart';
@@ -113,14 +114,53 @@ class IsarInvoiceService {
   Future<Result<List<InvoiceModel>>> getInvoicesPaginated(
     int page,
     int limit,
+    SortType sortType,
   ) async {
     try {
-      final invoices = await _isar.invoiceModels
-          .where()
-          .sortByDisplayNameDesc()
-          .offset(page * limit)
-          .limit(limit)
-          .findAll();
+      final List<InvoiceModel> invoices;
+      switch (sortType) {
+        case SortType.nameAsc:
+          invoices = await _isar.invoiceModels
+              .where()
+              .sortByDisplayName()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.nameDesc:
+          invoices = await _isar.invoiceModels
+              .where()
+              .sortByDisplayNameDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.newest:
+          invoices = await _isar.invoiceModels
+              .where()
+              .sortByCreatedAtDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.oldest:
+          invoices = await _isar.invoiceModels
+              .where()
+              .sortByCreatedAt()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        default:
+          // fallback — newest first
+          invoices = await _isar.invoiceModels
+              .where()
+              .sortByCreatedAtDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+      }
       return Success(invoices);
     } on IsarError catch (e) {
       return Error(

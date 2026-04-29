@@ -68,8 +68,10 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
 
   InvoiceController(this._invoiceRepository, this.ref)
     : super(InvoiceListState(isLoading: false, invoices: [], failure: null)) {
-    ref.listen(invoiceSortTypeProvider, (_, _) {
-      _applyFiltersAndSort();
+    ref.listen(invoiceSortTypeProvider, (previous, next) {
+      if (previous != next) {
+        fetchInvoices();
+      }
     });
   }
 
@@ -80,8 +82,12 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
       currentPage: 0,
       hasMore: true,
     );
-    // final result = await _invoiceRepository.getAllInvoices();
-    final result = await _invoiceRepository.getInvoicesPaginated(0, _pagesize);
+    final sortType = ref.read(invoiceSortTypeProvider);
+    final result = await _invoiceRepository.getInvoicesPaginated(
+      0,
+      _pagesize,
+      sortType,
+    );
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
         _allInvoices = fetched.data;
@@ -91,7 +97,6 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
           currentPage: 0,
           invoices: fetched.data,
         );
-        // _applyFiltersAndSort();
         break;
       case Error<List<InvoiceModel>> e:
         state = state.copyWith(
@@ -107,21 +112,21 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     if (!state.hasMore || state.isLoadingMore) return;
     state = state.copyWith(isLoadingMore: true);
     final nextPage = state.currentPage + 1;
+    final sortType = ref.read(invoiceSortTypeProvider);
     final result = await _invoiceRepository.getInvoicesPaginated(
       nextPage,
       _pagesize,
+      sortType,
     );
 
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
         _allInvoices = [..._allInvoices, ...fetched.data];
         state = state.copyWith(
-          invoices: [...state.invoices, ...fetched.data],
           isLoadingMore: false,
           hasMore: fetched.data.length == _pagesize,
           currentPage: nextPage,
         );
-      // _applyFiltersAndSort();
       case Error<List<InvoiceModel>> e:
         state = state.copyWith(
           isLoading: false,
@@ -142,7 +147,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     );
     switch (result) {
       case Success<void> _:
-        // fetchInvoices();
+        fetchInvoices();
         break;
       case Error<void> e:
         state = state.copyWith(

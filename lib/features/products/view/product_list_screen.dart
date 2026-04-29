@@ -24,12 +24,39 @@ class ProductListScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(productControllerProvider.notifier).fetchProducts();
     });
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    final maxScroll = position.maxScrollExtent;
+    final currentScroll = position.pixels;
+
+    if (currentScroll >= maxScroll - 200) {
+      final state = ref.read(productControllerProvider);
+      // guard against duplicate calls
+      if (!state.isLoadingMore && state.hasMore && !state.isLoading) {
+        ref.read(productControllerProvider.notifier).fetchMore();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   // ✅ ADDED: Helper to get full image path
@@ -165,8 +192,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               icon: const Icon(Icons.sort_rounded),
               tooltip: 'Sort Products',
               initialValue: sortType,
-              onSelected: (type) =>
-                  ref.read(sortTypeProvider.notifier).setSortType(type),
+              onSelected: (type) {
+                ref.read(sortTypeProvider.notifier).setSortType(type);
+                _scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              },
               itemBuilder: (context) => sortOptions.map((type) {
                 return PopupMenuItem(
                   value: type,
@@ -210,14 +243,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               ),
             ),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: Duration(milliseconds: 400),
-                child: _buildBody(
-                  context,
-                  ref,
-                  state,
-                  ref.read(isListViewModeProvider),
-                ),
+              child: _buildBody(
+                context,
+                ref,
+                state,
+                ref.read(isListViewModeProvider),
               ),
             ),
           ],
@@ -281,7 +311,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Widget _buildGridView(List<ProductModel> products) {
+    final state = ref.watch(productControllerProvider);
+    final itemCount = products.length + (state.hasMore ? 1 : 0);
     return GridView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.all(12),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 200,
@@ -289,9 +322,17 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         crossAxisSpacing: 12,
         mainAxisExtent: 280,
       ),
-      itemCount: products.length,
+      itemCount: itemCount,
       itemBuilder: (context, index) {
+        if (index == products.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final product = products[index];
         return TweenAnimationBuilder(
+          key: ValueKey(product.isarId!),
           tween: Tween(begin: 0.0, end: 1.0),
           duration: Duration(milliseconds: 400 + (index * 50).clamp(0, 300)),
           builder: (context, value, child) {
@@ -310,10 +351,21 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Widget _buildListView(List<ProductModel> products) {
+    final state = ref.watch(productControllerProvider);
+    final itemCount = products.length + (state.hasMore ? 1 : 0);
     return ListView.builder(
-      itemCount: products.length,
+      controller: _scrollController,
+      itemCount: itemCount,
       itemBuilder: (context, index) {
+        if (index == products.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final product = products[index];
         return TweenAnimationBuilder(
+          key: ValueKey(product.isarId!),
           tween: Tween(begin: 0.0, end: 1.0),
           duration: Duration(milliseconds: 400 + (index * 50).clamp(0, 300)),
           builder: (context, value, child) {
@@ -496,7 +548,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                       return Image.file(
                         File(snapshot.data!),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, _, _) => const Icon(
                           Icons.broken_image,
                           color: AppColors.error,
                         ),

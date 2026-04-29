@@ -115,6 +115,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(clientControllerProvider);
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       appBar: AppBar(
         actionsPadding: EdgeInsets.symmetric(horizontal: 8),
@@ -310,24 +312,27 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: state.isLoading ? null : _saveClient,
-                  child: state.isLoading
-                      ? const CircularProgressIndicator()
-                      : Text(
-                          widget.initialClient == null
-                              ? 'Save Client'
-                              : 'Edit Client',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                ),
-              ),
             ],
           ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: isKeyboardOpen
+              ? MediaQuery.of(context).viewInsets.bottom + 8
+              : 16,
+        ),
+        child: ElevatedButton(
+          onPressed: state.isLoading ? null : _saveClient,
+          child: state.isLoading
+              ? const CircularProgressIndicator()
+              : Text(
+                  widget.initialClient == null ? 'Save Client' : 'Edit Client',
+                  style: TextStyle(fontSize: 16),
+                ),
         ),
       ),
     );

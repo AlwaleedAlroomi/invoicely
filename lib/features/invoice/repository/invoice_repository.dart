@@ -1,4 +1,5 @@
 import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
@@ -13,7 +14,11 @@ abstract class InvoiceRepository {
   // read
   Future<Result<InvoiceModel?>> getInvoiceByRemoteId(String remoteId);
   Future<Result<List<InvoiceModel>>> getAllInvoices();
-  Future<Result<List<InvoiceModel>>> getInvoicesPaginated(int page, int limit);
+  Future<Result<List<InvoiceModel>>> getInvoicesPaginated(
+    int page,
+    int limit,
+    SortType sortType,
+  );
   Future<Result<List<InvoiceModel>>> getInvoicesByClient(String clientRemoteId);
   Future<Result<List<InvoiceModel>>> getInvoicesByStatus(InvoiceStatus status);
   Future<Result<List<InvoiceModel>>> getInvoicesByProduct(String prodRemoteId);

@@ -12,12 +12,18 @@ class ProductListState {
   final bool isLoading;
   final List<ProductModel> products;
   final AppFailure? failure;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int currentPage;
   final ProductModel? selectedProduct;
 
   ProductListState({
     required this.isLoading,
     required this.products,
     this.failure,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+    this.currentPage = 0,
     this.selectedProduct,
   });
 
@@ -25,12 +31,18 @@ class ProductListState {
     bool? isLoading,
     List<ProductModel>? products,
     AppFailure? failure,
+    bool? isLoadingMore,
+    bool? hasMore,
+    int? currentPage,
     ProductModel? selectedProduct,
   }) {
     return ProductListState(
       isLoading: isLoading ?? this.isLoading,
       products: products ?? this.products,
       failure: failure,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
       selectedProduct: selectedProduct,
     );
   }
@@ -42,25 +54,40 @@ class ProductController extends StateNotifier<ProductListState> {
   List<ProductModel> _allProducts = [];
   String _searchQuery = '';
   bool _showActiveOnly = true;
+  static const int _pagesize = 20;
 
   ProductController(this._productRepository, this.ref)
     : super(ProductListState(isLoading: false, products: [], failure: null)) {
-    ref.listen(sortTypeProvider, (_, _) {
-      _applyFiltersAndSort();
+    ref.listen(sortTypeProvider, (previous, next) {
+      if (previous != next) {
+        fetchProducts();
+      }
     });
   }
 
   Future<void> fetchProducts() async {
-    state = state.copyWith(isLoading: true, failure: null);
-    final result = await _productRepository.getProducts();
+    state = state.copyWith(
+      isLoading: true,
+      failure: null,
+      currentPage: 0,
+      hasMore: true,
+    );
+    final sortType = ref.read(sortTypeProvider);
+    final result = await _productRepository.getProductsPaginated(
+      0,
+      _pagesize,
+      sortType,
+    );
 
     switch (result) {
-      case Success<List<ProductModel>> fecthed:
-        // final activeProducts = fecthed.data
-        //     .where((p) => p.isActive != false)
-        //     .toList();
-        _allProducts = fecthed.data;
-        _applyFiltersAndSort();
+      case Success<List<ProductModel>> fetched:
+        _allProducts = fetched.data;
+        state = state.copyWith(
+          isLoading: false,
+          hasMore: fetched.data.length == _pagesize,
+          currentPage: 0,
+          products: fetched.data,
+        );
         break;
       case Error<List<ProductModel>> e:
         state = state.copyWith(
@@ -69,6 +96,35 @@ class ProductController extends StateNotifier<ProductListState> {
           products: state.products.isEmpty ? const [] : state.products,
         );
         break;
+    }
+  }
+
+  Future<void> fetchMore() async {
+    if (state.isLoadingMore || !state.hasMore || state.isLoading) return;
+    state = state.copyWith(isLoadingMore: true);
+    final nextPage = state.currentPage + 1;
+    final sortType = ref.read(sortTypeProvider);
+    final result = await _productRepository.getProductsPaginated(
+      nextPage,
+      _pagesize,
+      sortType,
+    );
+
+    switch (result) {
+      case Success<List<ProductModel>> fetched:
+        _allProducts = [..._allProducts, ...fetched.data];
+        state = state.copyWith(
+          products: [...state.products, ...fetched.data],
+          isLoadingMore: false,
+          hasMore: fetched.data.length == _pagesize,
+          currentPage: nextPage,
+        );
+      case Error<List<ProductModel>> e:
+        state = state.copyWith(
+          isLoading: false,
+          failure: e.failure,
+          products: state.products.isEmpty ? const [] : state.products,
+        );
     }
   }
 
@@ -99,14 +155,6 @@ class ProductController extends StateNotifier<ProductListState> {
     final result = await _productRepository.deleteProduct(product);
     switch (result) {
       case Success<void> _:
-        // final updatedList = state.products
-        //     .where((p) => p.remoteId != product.remoteId)
-        //     .toList();
-        // state = state.copyWith(
-        //   isLoading: false,
-        //   products: updatedList,
-        //   failure: null,
-        // );
         fetchProducts();
         break;
       case Error<void> e:

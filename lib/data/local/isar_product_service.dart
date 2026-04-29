@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/local/isar_service.dart';
@@ -11,9 +12,75 @@ class IsarProductService {
 
   IsarProductService([Isar? isar]) : _isar = isar ?? IsarService.instance;
 
-  Future<Result<List<ProductModel>>> getProducts() async {
+  Future<Result<List<ProductModel>>> getProductsPaginated(
+    int page,
+    int limit,
+    SortType sortType,
+  ) async {
     try {
-      final products = await _isar.productModels.where().findAll();
+      final List<ProductModel> products;
+      switch (sortType) {
+        case SortType.nameAsc:
+          products = await _isar.productModels
+              .where()
+              .sortByDisplayName()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.nameDesc:
+          products = await _isar.productModels
+              .where()
+              .sortByDisplayNameDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.newest:
+          products = await _isar.productModels
+              .where()
+              .sortByCreatedAtDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.oldest:
+          products = await _isar.productModels
+              .where()
+              .sortByCreatedAt()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+          break;
+        case SortType.priceAsc:
+          products = await _isar.productModels
+              .where()
+              .sortByPrice()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+        case SortType.priceDesc:
+          products = await _isar.productModels
+              .where()
+              .sortByPriceDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+        case SortType.quantityAsc:
+          products = await _isar.productModels
+              .where()
+              .sortByQuantity()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+        case SortType.quantityDesc:
+          products = await _isar.productModels
+              .where()
+              .sortByQuantityDesc()
+              .offset(page * limit)
+              .limit(limit)
+              .findAll();
+      }
       return Success(products);
     } on IsarError catch (e) {
       return Error(
@@ -134,6 +201,28 @@ class IsarProductService {
     } catch (e) {
       debugPrint("Warning: Failed to find product by SKU $sku: $e");
       return null;
+    }
+  }
+
+  Future<Result<List<ProductModel>>> getAllActiveProducts() async {
+    try {
+      final result = await _isar.productModels
+          .where()
+          .filter()
+          .isActiveEqualTo(true)
+          .findAll();
+      return Success(result);
+    } on IsarError catch (e) {
+      return Error(
+        AppFailure.database('Isar error fetching products: ${e.message}'),
+      );
+    } catch (e) {
+      return Error(
+        AppFailure(
+          'An unexpected error occurred fetching products: $e',
+          type: FailureType.database,
+        ),
+      );
     }
   }
 }

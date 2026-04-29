@@ -1,3 +1,4 @@
+import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/local/isar_product_service.dart';
@@ -45,9 +46,12 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<ProductModel>>> getProducts() async {
-    // TODO: implement getProducts
-    return await _productService.getProducts();
+  Future<Result<List<ProductModel>>> getProductsPaginated(
+    int page,
+    int limit,
+    SortType sortType,
+  ) async {
+    return await _productService.getProductsPaginated(page, limit, sortType);
   }
 
   @override
@@ -112,5 +116,10 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       return Error(AppFailure('Unexpected error deleting product: $e'));
     }
+  }
+
+  @override
+  Future<Result<List<ProductModel>>> getAllActiveProducts() async {
+    return await _productService.getAllActiveProducts();
   }
 }

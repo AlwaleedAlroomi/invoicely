@@ -1,4 +1,5 @@
 import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/local/isar_invoice_service.dart';
@@ -62,8 +63,9 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   Future<Result<List<InvoiceModel>>> getInvoicesPaginated(
     int page,
     int limit,
+    SortType sortType,
   ) async {
-    return await _invoiceService.getInvoicesPaginated(page, limit);
+    return await _invoiceService.getInvoicesPaginated(page, limit, sortType);
   }
 
   @override

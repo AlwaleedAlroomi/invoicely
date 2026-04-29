@@ -39,7 +39,9 @@ final sortTypeProvider =
     });
 
 final allProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
-  final result = await ref.read(productRepositoryProvider).getProducts();
+  final result = await ref
+      .read(productRepositoryProvider)
+      .getAllActiveProducts();
   switch (result) {
     case Success(:final data):
       return data;
