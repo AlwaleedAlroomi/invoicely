@@ -90,12 +90,13 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     );
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
-        _allInvoices = fetched.data;
+        final checked = await _checkOverDue(fetched.data);
+        _allInvoices = checked;
         state = state.copyWith(
           isLoading: false,
           hasMore: fetched.data.length == _pagesize,
           currentPage: 0,
-          invoices: fetched.data,
+          invoices: checked,
         );
         break;
       case Error<List<InvoiceModel>> e:
@@ -121,7 +122,8 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
 
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
-        _allInvoices = [..._allInvoices, ...fetched.data];
+        final checked = await _checkOverDue(fetched.data);
+        _allInvoices = [..._allInvoices, ...checked];
         state = state.copyWith(
           isLoadingMore: false,
           hasMore: fetched.data.length == _pagesize,
@@ -134,6 +136,27 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
           invoices: state.invoices.isEmpty ? const [] : state.invoices,
         );
     }
+  }
+
+  Future<List<InvoiceModel>> _checkOverDue(List<InvoiceModel> invoices) async {
+    final now = DateTime.now();
+    final List<InvoiceModel> result = [];
+
+    for (final invoice in invoices) {
+      // only check sent invoices — skip paid, cancelled, draft
+      if (invoice.status == InvoiceStatus.sent &&
+          invoice.dueDate.isBefore(now)) {
+        await _invoiceRepository.updateInvoiceStatus(
+          invoice,
+          InvoiceStatus.overdue,
+        );
+
+        result.add(invoice.copyWith(status: InvoiceStatus.overdue));
+      } else {
+        result.add(invoice);
+      }
+    }
+    return invoices;
   }
 
   Future<void> updateInvoiceStatus(

@@ -9,7 +9,7 @@ The "Complex Transaction" phase. Handling data linking, real-time calculations, 
 - [x] **I1.3 Repository**: Implement `IsarInvoiceService` and `InvoiceRepositoryImpl`.
 - [x] **I2.1 Controller State**: Implement `InvoiceListState` and `InvoiceFormState`.
 - [x] **I2.2 Logic**: Create `InvoiceFormController` for drafting and `InvoiceListController` for viewing.
-- [ ] **I2.3 Automatic Overdue Calculation**: 
+- [x] **I2.3 Automatic Overdue Calculation**: 
     - Implement a getter in `InvoiceModel` or an extension to check `if (status != paid && dueDate < now)`.
     - Ensure the `InvoiceListController` filtering logic accounts for this "effective status."
     - Add UI indicators (Red text/icons) for overdue items.
