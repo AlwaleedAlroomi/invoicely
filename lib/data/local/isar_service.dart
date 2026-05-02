@@ -2,6 +2,7 @@ import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
+import 'package:invoicely/features/settings/data/business_profile_model.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -25,7 +26,7 @@ class IsarService {
           ProductModelSchema,
           ClientModelSchema,
           InvoiceModelSchema,
-          // InvoiceItemModelSchema,
+          BusinessProfileModelSchema,
         ],
         directory: appDocsDir.path,
         name: 'invoicely_db',
