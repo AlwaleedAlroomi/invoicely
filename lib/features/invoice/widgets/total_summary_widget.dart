@@ -26,7 +26,7 @@ class TotalsSummarySection extends ConsumerWidget {
               SizedBox(
                 width: 80,
                 child: TextFormField(
-                  // initialValue: state.taxRate.toStringAsFixed(0),
+                  initialValue: state.taxRate.toStringAsFixed(0),
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
                   decoration: InputDecoration(

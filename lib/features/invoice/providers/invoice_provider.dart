@@ -33,7 +33,7 @@ final invoiceSortTypeProvider =
 final invoiceFormControllerProvider =
     StateNotifierProvider<InvoiceFormController, InvoiceFormState>((ref) {
       final repository = ref.watch(invoiceRepositoryProvider);
-      return InvoiceFormController(repository);
+      return InvoiceFormController(repository, ref);
     });
 
 final clientInvoicesProvider =

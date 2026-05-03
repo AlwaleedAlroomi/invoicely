@@ -6,6 +6,8 @@ import 'package:invoicely/features/clients/view/client_list_screen.dart';
 import 'package:invoicely/features/invoice/view/invoice_list_screen.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/products/view/product_list_screen.dart';
+import 'package:invoicely/features/settings/providers/settings_providers.dart';
+import 'package:invoicely/features/settings/view/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -20,16 +22,20 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeControllerProvider);
+    // final primaryColor = ref.watch(colorControllerProvider);
+
     return MaterialApp(
       title: 'Invoicely',
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
-      home: const InvoiceListScreen(),
+      themeMode: themeMode,
+      home: const SettingsScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

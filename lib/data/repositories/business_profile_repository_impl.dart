@@ -10,7 +10,7 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
   const BusinessProfileRepositoryImpl(this._profileService);
 
   @override
-  Future<Result<BusinessProfileModel>> getBusinessProfile() async {
+  Future<Result<BusinessProfileModel?>> getBusinessProfile() async {
     return await _profileService.getBusinessProfile();
   }
 

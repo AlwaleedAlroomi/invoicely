@@ -3,6 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/core/results/result.dart';
+import 'package:invoicely/data/local/isar_business_profile_service.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -30,6 +32,34 @@ class InvoicePDFService {
     final pw.Font arabicFontBold = pw.Font.ttf(
       await rootBundle.load("assets/fonts/Amiri-Bold.ttf"),
     );
+
+    final profileResult = await IsarBusinessProfileService()
+        .getBusinessProfile();
+
+    // // Using a switch expression to handle both cases
+    // final businessName = switch (profileResult) {
+    //   Success(data: final profile) =>
+    //     profile.displayName, // Replace .name with your actual field
+    //   Error() => 'Invoicely', // Fallback to default on error
+    // };
+
+    // final logoPath = switch (profileResult) {
+    //   Success(data: final profile) => profile.logoPath,
+    //   Error() => null,
+    // };
+
+    final profile = switch (profileResult) {
+      Success() => profileResult.data,
+      Error() => null,
+    };
+
+    pw.MemoryImage? logoImage;
+    if (profile?.logo != null) {
+      final logoFile = File(profile!.logo!);
+      if (await logoFile.exists()) {
+        logoImage = pw.MemoryImage(await logoFile.readAsBytes());
+      }
+    }
 
     // Text Format
     pw.Widget buildText(
@@ -89,27 +119,42 @@ class InvoicePDFService {
         decoration: const pw.BoxDecoration(color: primaryColor),
         padding: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 24),
         child: pw.Row(
+          // Main Row to hold Left and Right sections
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            // company / app name
+            // LEFT SECTION: Logo/Name + Email
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                buildText(
-                  'Invoicely',
-                  isBold: true,
-                  style: pw.TextStyle(fontSize: 28, color: PdfColors.white),
-                ),
+                if (logoImage != null)
+                  pw.Container(
+                    height: 50,
+                    width: 50,
+                    child: pw.Image(logoImage),
+                  )
+                else
+                  pw.Text(
+                    profile?.displayName ?? 'N/A',
+                    style: pw.TextStyle(
+                      color: PdfColors.white,
+                      fontSize: 28,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
                 pw.SizedBox(height: 4),
-                buildText(
-                  'Professional Invoice',
-                  style: pw.TextStyle(fontSize: 11, color: PdfColors.white),
-                ),
+                if (profile?.email != null)
+                  pw.Text(
+                    profile!.email!,
+                    style: const pw.TextStyle(
+                      color: PdfColors.white,
+                      fontSize: 10,
+                    ),
+                  ),
               ],
             ),
 
-            // invoice number + status + QR
+            // RIGHT SECTION: invoice number + status + QR
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
@@ -151,9 +196,7 @@ class InvoicePDFService {
                         ),
                       ],
                     ),
-
                     pw.SizedBox(width: 16),
-
                     // QR code
                     pw.Container(
                       height: 60,

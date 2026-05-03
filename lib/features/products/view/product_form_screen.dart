@@ -297,21 +297,6 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
               const SizedBox(height: 16),
               _buildStockQuantityInput(),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: state.isLoading ? null : _saveProduct,
-                  child: state.isLoading
-                      ? const CircularProgressIndicator()
-                      : Text(
-                          widget.initialProduct == null
-                              ? 'Save Product'
-                              : 'Edit Product',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                ),
-              ),
             ],
           ),
         ),

@@ -15,7 +15,7 @@ class AppTheme {
       secondary: AppColors.secondary,
       onSecondary: AppColors.lightSurface,
       surface: AppColors.lightSurface,
-      onSurface: AppColors.lightBackground,
+      onSurface: AppColors.titleText,
       error: AppColors.error,
       onError: AppColors.lightSurface,
     );

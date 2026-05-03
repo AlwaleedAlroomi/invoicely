@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/repository/invoice_repository.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
+import 'package:invoicely/features/products/providers/product_providers.dart';
+import 'package:invoicely/features/settings/data/default_settings.dart';
 
 class InvoiceFormState {
   final ClientModel? selectedClient;
@@ -14,6 +16,7 @@ class InvoiceFormState {
   final DateTime issueDate;
   final DateTime dueDate;
   final InvoiceStatus status;
+  final String? currency;
   final String? notes;
   final String? terms;
   final String invoiceNumber;
@@ -38,6 +41,7 @@ class InvoiceFormState {
     this.status = InvoiceStatus.draft,
     this.notes,
     this.terms,
+    this.currency,
     this.invoiceNumber = '',
     this.isLoading = false,
     this.error,
@@ -52,6 +56,7 @@ class InvoiceFormState {
     InvoiceStatus? status,
     String? notes,
     String? terms,
+    String? currency,
     String? invoiceNumber,
     bool? isLoading,
     String? error,
@@ -63,6 +68,7 @@ class InvoiceFormState {
       issueDate: issueDate ?? this.issueDate,
       dueDate: dueDate ?? this.dueDate,
       status: status ?? this.status,
+      currency: currency ?? this.currency,
       notes: notes ?? this.notes,
       terms: terms ?? this.terms,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
@@ -74,7 +80,8 @@ class InvoiceFormState {
 
 class InvoiceFormController extends StateNotifier<InvoiceFormState> {
   final InvoiceRepository _repo;
-  InvoiceFormController(this._repo)
+  final Ref ref;
+  InvoiceFormController(this._repo, this.ref)
     : super(
         InvoiceFormState(
           issueDate: DateTime.now(),
@@ -85,12 +92,24 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
   // ── INIT ──────────────────────────────────────────
 
   Future<void> init() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final defaultTaxRate = DefaultSettings.getTaxRate(prefs);
+    final defaultCurrency = DefaultSettings.getCurrency(prefs);
+
     final result = await _repo.generateInvoiceNumber();
     switch (result) {
       case Success(:final data):
-        state = state.copyWith(invoiceNumber: data);
+        state = state.copyWith(
+          invoiceNumber: data,
+          taxRate: defaultTaxRate,
+          currency: defaultCurrency,
+        );
       case Error(:final failure):
-        state = state.copyWith(error: failure.message);
+        state = state.copyWith(
+          error: failure.message,
+          taxRate: defaultTaxRate,
+          currency: defaultCurrency,
+        );
     }
   }
 
