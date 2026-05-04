@@ -28,12 +28,12 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeControllerProvider);
-    // final primaryColor = ref.watch(colorControllerProvider);
+    final primaryColor = ref.watch(colorControllerProvider);
 
     return MaterialApp(
       title: 'Invoicely',
-      theme: AppTheme.lightTheme(),
-      darkTheme: AppTheme.darkTheme(),
+      theme: AppTheme.lightTheme(primaryColor),
+      darkTheme: AppTheme.darkTheme(primaryColor),
       themeMode: themeMode,
       home: const SettingsScreen(),
       debugShowCheckedModeBanner: false,

@@ -7,18 +7,20 @@ class AppTheme {
   // ☀️ LIGHT MODE THEME
   // ===================================================================
 
-  static ThemeData lightTheme() {
-    // 1. Define the ColorScheme based on the provided palette
-    final ColorScheme lightColorScheme = const ColorScheme.light().copyWith(
-      primary: AppColors.primary,
-      onPrimary: AppColors.lightSurface, // Text on primary background
-      secondary: AppColors.secondary,
-      onSecondary: AppColors.lightSurface,
-      surface: AppColors.lightSurface,
-      onSurface: AppColors.titleText,
-      error: AppColors.error,
-      onError: AppColors.lightSurface,
-    );
+  static ThemeData lightTheme(Color primaryColor) {
+    final ColorScheme lightColorScheme =
+        ColorScheme.fromSeed(
+          seedColor: primaryColor,
+          brightness: Brightness.light,
+        ).copyWith(
+          onPrimary: AppColors.lightSurface,
+          secondary: AppColors.secondary,
+          onSecondary: AppColors.lightSurface,
+          surface: AppColors.lightSurface,
+          onSurface: AppColors.titleText,
+          error: AppColors.error,
+          onError: AppColors.lightSurface,
+        );
 
     return ThemeData(
       useMaterial3: true,
@@ -27,7 +29,7 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.lightBackground,
       dividerColor: AppColors.divider,
 
-      // 2. Typography
+      // ── TYPOGRAPHY ──────────────────────────────
       textTheme: TextTheme(
         headlineLarge: AppTextStyles.h1.copyWith(color: AppColors.titleText),
         headlineMedium: AppTextStyles.h2.copyWith(color: AppColors.titleText),
@@ -36,12 +38,11 @@ class AppTheme {
         bodySmall: AppTextStyles.caption.copyWith(
           color: AppColors.subtitleText,
         ),
-        // Map remaining styles to ensure all widgets use custom themes
         titleLarge: AppTextStyles.h2.copyWith(color: AppColors.titleText),
         titleMedium: AppTextStyles.body1.copyWith(color: AppColors.titleText),
       ),
 
-      // 3. App Bar Theme
+      // ── APP BAR ─────────────────────────────────
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.lightSurface,
         foregroundColor: AppColors.titleText,
@@ -52,22 +53,38 @@ class AppTheme {
         shadowColor: AppColors.secondary,
       ),
 
-      // 4. Elevated Button Theme (Primary Action Button)
+      // ── ELEVATED BUTTON ─────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.lightSurface, // White text
+          backgroundColor: lightColorScheme.primary,
+          foregroundColor: lightColorScheme.onPrimary,
           textStyle: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          minimumSize: const Size(
-            double.infinity,
-            50,
-          ), // Full width minimum height
+          minimumSize: const Size(double.infinity, 50),
         ),
       ),
 
-      // 5. Input Field Theme (Critical for forms)
+      // ── TEXT BUTTON ─────────────────────────────
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: lightColorScheme.primary,
+          textStyle: AppTextStyles.body1,
+        ),
+      ),
+
+      // ── OUTLINED BUTTON ─────────────────────────
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: lightColorScheme.primary,
+          side: BorderSide(color: lightColorScheme.primary),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          minimumSize: const Size(double.infinity, 50),
+        ),
+      ),
+
+      // ── INPUT FIELDS ────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.lightSurface,
@@ -85,9 +102,13 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: lightColorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
@@ -95,45 +116,117 @@ class AppTheme {
         hintStyle: AppTextStyles.body2.copyWith(
           color: AppColors.subtitleText.withValues(alpha: 0.6),
         ),
+        prefixIconColor: AppColors.subtitleText,
+        suffixIconColor: AppColors.subtitleText,
       ),
 
-      // 6. Card Theme (Uses Surface color)
+      // ── CARD ────────────────────────────────────
       cardTheme: CardThemeData(
         color: AppColors.lightSurface,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
+      // ── FAB ─────────────────────────────────────
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        shape: CircleBorder(),
-        backgroundColor: AppColors.primary,
+        shape: const CircleBorder(),
+        backgroundColor: lightColorScheme.primary,
+        foregroundColor: lightColorScheme.onPrimary,
+      ),
+
+      // ── ICON BUTTON ─────────────────────────────
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(foregroundColor: AppColors.titleText),
+      ),
+
+      // ── CHIP ────────────────────────────────────
+      chipTheme: ChipThemeData(
+        selectedColor: lightColorScheme.primary,
+        labelStyle: AppTextStyles.body2,
+        side: BorderSide(color: AppColors.divider),
+      ),
+
+      // ── BOTTOM SHEET ────────────────────────────
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.lightSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+      ),
+
+      // ── DIALOG ──────────────────────────────────
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.lightSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.titleText),
+        contentTextStyle: AppTextStyles.body1.copyWith(
+          color: AppColors.subtitleText,
+        ),
+      ),
+
+      // ── LIST TILE ───────────────────────────────
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.subtitleText,
+        titleTextStyle: AppTextStyles.body1.copyWith(
+          color: AppColors.titleText,
+        ),
+        subtitleTextStyle: AppTextStyles.body2.copyWith(
+          color: AppColors.subtitleText,
+        ),
+      ),
+
+      // ── POPUP MENU ──────────────────────────────
+      popupMenuTheme: PopupMenuThemeData(
+        color: AppColors.lightSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        textStyle: AppTextStyles.body2.copyWith(color: AppColors.titleText),
+      ),
+
+      // ── SNACKBAR ────────────────────────────────
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.titleText,
+        contentTextStyle: AppTextStyles.body2.copyWith(
+          color: AppColors.lightSurface,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        behavior: SnackBarBehavior.floating,
+      ),
+
+      // ── DIVIDER ─────────────────────────────────
+      dividerTheme: const DividerThemeData(
+        color: AppColors.divider,
+        thickness: 1,
       ),
     );
   }
 
   // ===================================================================
-  // 🌙 DARK MODE THEME (Extrapolated)
+  // 🌙 DARK MODE THEME
   // ===================================================================
 
-  static ThemeData darkTheme() {
-    // 1. Define the ColorScheme (Inverted background/surface, same brand colors)
-    final ColorScheme darkColorScheme = const ColorScheme.dark().copyWith(
-      primary: AppColors.primary, // Keep brand color consistent
-      onPrimary: AppColors.darkTitleText,
-      secondary: AppColors.secondary, // Keep brand color consistent
-      onSecondary: AppColors.darkTitleText,
-      surface: AppColors.darkSurface, // Very dark background
-      error: AppColors.error, // Keep error color consistent
-      onError: AppColors.darkTitleText,
-    );
+  static ThemeData darkTheme(Color primaryColor) {
+    final ColorScheme darkColorScheme =
+        ColorScheme.fromSeed(
+          seedColor: primaryColor,
+          brightness: Brightness.dark,
+          primary: primaryColor,
+        ).copyWith(
+          onPrimary: AppColors.darkTitleText,
+          secondary: AppColors.secondary,
+          onSecondary: AppColors.darkTitleText,
+          surface: AppColors.darkSurface,
+          error: AppColors.error,
+          onError: AppColors.darkTitleText,
+        );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: darkColorScheme,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.darkBackground,
-      dividerColor: AppColors.darkSurface, // Darker divider
-      // 2. Typography (Text colors are inverted for visibility)
+      dividerColor: AppColors.darkSurface,
+
+      // ── TYPOGRAPHY ──────────────────────────────
       textTheme: TextTheme(
         headlineLarge: AppTextStyles.h1.copyWith(
           color: AppColors.darkTitleText,
@@ -154,7 +247,7 @@ class AppTheme {
         ),
       ),
 
-      // 3. App Bar Theme
+      // ── APP BAR ─────────────────────────────────
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkSurface,
         foregroundColor: AppColors.darkTitleText,
@@ -166,11 +259,11 @@ class AppTheme {
         centerTitle: true,
       ),
 
-      // 4. Elevated Button Theme (Keep the same styling/colors)
+      // ── ELEVATED BUTTON ─────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.darkTitleText,
+          backgroundColor: darkColorScheme.primary,
+          foregroundColor: darkColorScheme.onPrimary,
           textStyle: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -178,7 +271,26 @@ class AppTheme {
         ),
       ),
 
-      // 5. Input Field Theme (Adjusted for dark background)
+      // ── TEXT BUTTON ─────────────────────────────
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: darkColorScheme.primary,
+          textStyle: AppTextStyles.body1,
+        ),
+      ),
+
+      // ── OUTLINED BUTTON ─────────────────────────
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: darkColorScheme.primary,
+          side: BorderSide(color: darkColorScheme.primary),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          minimumSize: const Size(double.infinity, 50),
+        ),
+      ),
+
+      // ── INPUT FIELDS ────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.darkSurface,
@@ -188,9 +300,7 @@ class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: AppColors.darkSubtitleText,
-          ), // Use light gray for border
+          borderSide: const BorderSide(color: AppColors.darkSubtitleText),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -198,9 +308,13 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.secondary, width: 2),
+          borderSide: BorderSide(color: darkColorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
@@ -210,18 +324,90 @@ class AppTheme {
         hintStyle: AppTextStyles.body2.copyWith(
           color: AppColors.darkSubtitleText.withValues(alpha: 0.6),
         ),
+        prefixIconColor: AppColors.darkSubtitleText,
+        suffixIconColor: AppColors.darkSubtitleText,
       ),
 
-      // 6. Card Theme
+      // ── CARD ────────────────────────────────────
       cardTheme: CardThemeData(
         color: AppColors.darkSurface,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
+      // ── FAB ─────────────────────────────────────
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        shape: CircleBorder(),
-        backgroundColor: AppColors.primary,
+        shape: const CircleBorder(),
+        backgroundColor: darkColorScheme.primary,
+        foregroundColor: darkColorScheme.onPrimary,
+      ),
+
+      // ── ICON BUTTON ─────────────────────────────
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(foregroundColor: AppColors.darkTitleText),
+      ),
+
+      // ── CHIP ────────────────────────────────────
+      chipTheme: ChipThemeData(
+        selectedColor: darkColorScheme.primary,
+        labelStyle: AppTextStyles.body2.copyWith(
+          color: AppColors.darkTitleText,
+        ),
+        side: const BorderSide(color: AppColors.darkSubtitleText),
+      ),
+
+      // ── BOTTOM SHEET ────────────────────────────
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+      ),
+
+      // ── DIALOG ──────────────────────────────────
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titleTextStyle: AppTextStyles.h2.copyWith(
+          color: AppColors.darkTitleText,
+        ),
+        contentTextStyle: AppTextStyles.body1.copyWith(
+          color: AppColors.darkSubtitleText,
+        ),
+      ),
+
+      // ── LIST TILE ───────────────────────────────
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.darkSubtitleText,
+        titleTextStyle: AppTextStyles.body1.copyWith(
+          color: AppColors.darkTitleText,
+        ),
+        subtitleTextStyle: AppTextStyles.body2.copyWith(
+          color: AppColors.darkSubtitleText,
+        ),
+      ),
+
+      // ── POPUP MENU ──────────────────────────────
+      popupMenuTheme: PopupMenuThemeData(
+        color: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        textStyle: AppTextStyles.body2.copyWith(color: AppColors.darkTitleText),
+      ),
+
+      // ── SNACKBAR ────────────────────────────────
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.darkSurface,
+        contentTextStyle: AppTextStyles.body2.copyWith(
+          color: AppColors.darkTitleText,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        behavior: SnackBarBehavior.floating,
+      ),
+
+      // ── DIVIDER ─────────────────────────────────
+      dividerTheme: const DividerThemeData(
+        color: AppColors.darkSubtitleText,
+        thickness: 1,
       ),
     );
   }
