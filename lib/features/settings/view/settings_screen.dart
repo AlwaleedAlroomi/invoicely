@@ -6,6 +6,7 @@ import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/settings/data/default_settings.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/features/settings/view/business_profile_screen.dart';
+import 'package:invoicely/features/settings/view/export_to_csv_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -340,7 +341,38 @@ class _BackupRestoreTile extends StatelessWidget {
       subtitle: const Text('Export or import your data'),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
-        // Day 2 task
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return SimpleDialog(
+              title: const Text('Export Data'),
+              children: [
+                SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    Navigator.of(
+                      context,
+                    ).push(FadeThroughRoute(page: const ExportToCsvScreen()));
+                  },
+                  child: const ListTile(
+                    leading: Icon(Icons.table_chart_outlined),
+                    title: Text('Export as CSV'),
+                  ),
+                ),
+                SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Export to Excel
+                  },
+                  child: const ListTile(
+                    leading: Icon(Icons.description_outlined),
+                    title: Text('Export as Excel (.xlsx)'),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
       },
     );
   }

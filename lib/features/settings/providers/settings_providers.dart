@@ -4,8 +4,9 @@ import 'package:invoicely/core/theme/theme_controller.dart';
 import 'package:invoicely/data/local/isar_business_profile_service.dart';
 import 'package:invoicely/data/repositories/business_profile_repository_impl.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
-import 'package:invoicely/features/settings/data/business_profile_model.dart';
+import 'package:invoicely/features/settings/controller/export_controller.dart';
 import 'package:invoicely/features/settings/repository/business_profile_repository.dart';
+import 'package:invoicely/features/settings/services/csv_export_service.dart';
 
 final themeControllerProvider =
     StateNotifierProvider<ThemeController, ThemeMode>((ref) {
@@ -30,3 +31,12 @@ final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
   final isarService = ref.watch(isarBusinessProfileServiceProvider);
   return BusinessProfileRepositoryImpl(isarService);
 });
+
+final exportServiceProvider = Provider<ExportService>((ref) {
+  return ExportService();
+});
+
+final exportControllerProvider =
+    StateNotifierProvider<ExportController, ExportState>((ref) {
+      return ExportController(ref.read(exportServiceProvider));
+    });

@@ -50,6 +50,7 @@ dependencies:
   intl: ^0.20.2
   file_picker: ^11.0.2
   arabic_reshaper: 
+  csv: ^8.0.0
 
 
 dev_dependencies:
