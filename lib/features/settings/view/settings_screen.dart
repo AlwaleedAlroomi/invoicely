@@ -7,6 +7,7 @@ import 'package:invoicely/features/settings/data/default_settings.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/features/settings/view/business_profile_screen.dart';
 import 'package:invoicely/features/settings/view/export_to_csv_screen.dart';
+import 'package:invoicely/features/settings/view/export_to_xlsx_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -362,7 +363,9 @@ class _BackupRestoreTile extends StatelessWidget {
                 SimpleDialogOption(
                   onPressed: () {
                     Navigator.pop(context);
-                    // Export to Excel
+                    Navigator.of(
+                      context,
+                    ).push(FadeThroughRoute(page: const ExportToXlsxScreen()));
                   },
                   child: const ListTile(
                     leading: Icon(Icons.description_outlined),

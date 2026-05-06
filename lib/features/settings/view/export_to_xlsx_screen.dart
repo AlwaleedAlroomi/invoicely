@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 
-class ExportToCsvScreen extends ConsumerWidget {
-  const ExportToCsvScreen({super.key});
+class ExportToXlsxScreen extends ConsumerWidget {
+  const ExportToXlsxScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(exportCsvControllerProvider);
+    final state = ref.watch(exportXlsxControllerProvider);
 
-    ref.listen(exportCsvControllerProvider, (previous, next) {
+    ref.listen(exportXlsxControllerProvider, (previous, next) {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
@@ -62,7 +62,7 @@ class ExportToCsvScreen extends ConsumerWidget {
                       const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
-                          'Files will be saved to your Downloads folder as CSV format.',
+                          'Files will be saved as Excel (.xlsx) format to your selected folder.',
                           style: TextStyle(fontSize: 12),
                         ),
                       ),
@@ -78,7 +78,7 @@ class ExportToCsvScreen extends ConsumerWidget {
                   subtitle: 'Export all invoices, clients and products at once',
                   color: Theme.of(context).colorScheme.primary,
                   onTap: () => ref
-                      .read(exportCsvControllerProvider.notifier)
+                      .read(exportXlsxControllerProvider.notifier)
                       .exportAll(),
                 ),
                 const SizedBox(height: 12),
@@ -92,7 +92,7 @@ class ExportToCsvScreen extends ConsumerWidget {
                   subtitle: 'Invoice number, client, dates, totals, status',
                   color: Colors.blue,
                   onTap: () => ref
-                      .read(exportCsvControllerProvider.notifier)
+                      .read(exportXlsxControllerProvider.notifier)
                       .exportInvoices(),
                 ),
                 const SizedBox(height: 12),
@@ -103,8 +103,8 @@ class ExportToCsvScreen extends ConsumerWidget {
                   subtitle: 'All line items across all invoices',
                   color: Colors.indigo,
                   onTap: () => ref
-                      .read(exportCsvControllerProvider.notifier)
-                      .exportInvoices(),
+                      .read(exportXlsxControllerProvider.notifier)
+                      .exportInvoiceItems(),
                 ),
                 const SizedBox(height: 12),
 
@@ -114,7 +114,7 @@ class ExportToCsvScreen extends ConsumerWidget {
                   subtitle: 'Client details, addresses, contact info',
                   color: Colors.green,
                   onTap: () => ref
-                      .read(exportCsvControllerProvider.notifier)
+                      .read(exportXlsxControllerProvider.notifier)
                       .exportClients(),
                 ),
                 const SizedBox(height: 12),
@@ -125,7 +125,7 @@ class ExportToCsvScreen extends ConsumerWidget {
                   subtitle: 'Product catalog with prices and stock',
                   color: Colors.orange,
                   onTap: () => ref
-                      .read(exportCsvControllerProvider.notifier)
+                      .read(exportXlsxControllerProvider.notifier)
                       .exportProducts(),
                 ),
               ],

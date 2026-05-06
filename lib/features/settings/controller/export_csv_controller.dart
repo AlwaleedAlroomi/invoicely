@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/features/settings/services/csv_export_service.dart';
 
 class ExportState {
@@ -26,10 +25,10 @@ class ExportState {
   }
 }
 
-class ExportController extends StateNotifier<ExportState> {
+class ExportCsvController extends StateNotifier<ExportState> {
   final ExportService _service;
 
-  ExportController(this._service) : super(const ExportState());
+  ExportCsvController(this._service) : super(const ExportState());
 
   Future<void> exportInvoices() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -55,6 +54,16 @@ class ExportController extends StateNotifier<ExportState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final path = await _service.exportProducts();
+      state = state.copyWith(isLoading: false, exportedPaths: [path]);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> exportInvoiceItems() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final path = await _service.exportInvoiceItems();
       state = state.copyWith(isLoading: false, exportedPaths: [path]);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

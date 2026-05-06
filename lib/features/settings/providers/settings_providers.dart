@@ -4,9 +4,11 @@ import 'package:invoicely/core/theme/theme_controller.dart';
 import 'package:invoicely/data/local/isar_business_profile_service.dart';
 import 'package:invoicely/data/repositories/business_profile_repository_impl.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
-import 'package:invoicely/features/settings/controller/export_controller.dart';
+import 'package:invoicely/features/settings/controller/export_csv_controller.dart';
+import 'package:invoicely/features/settings/controller/export_xlsx_controller.dart';
 import 'package:invoicely/features/settings/repository/business_profile_repository.dart';
 import 'package:invoicely/features/settings/services/csv_export_service.dart';
+import 'package:invoicely/features/settings/services/xlsx_export_service.dart';
 
 final themeControllerProvider =
     StateNotifierProvider<ThemeController, ThemeMode>((ref) {
@@ -32,11 +34,20 @@ final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
   return BusinessProfileRepositoryImpl(isarService);
 });
 
-final exportServiceProvider = Provider<ExportService>((ref) {
+final exportCsvServiceProvider = Provider<ExportService>((ref) {
   return ExportService();
 });
 
-final exportControllerProvider =
-    StateNotifierProvider<ExportController, ExportState>((ref) {
-      return ExportController(ref.read(exportServiceProvider));
+final exportCsvControllerProvider =
+    StateNotifierProvider<ExportCsvController, ExportState>((ref) {
+      return ExportCsvController(ref.read(exportCsvServiceProvider));
+    });
+
+final exportXlsxServiceProvider = Provider<XlsxExportService>((ref) {
+  return XlsxExportService();
+});
+
+final exportXlsxControllerProvider =
+    StateNotifierProvider<ExportXlsxController, ExportXlsxState>((ref) {
+      return ExportXlsxController(ref.read(exportXlsxServiceProvider));
     });
