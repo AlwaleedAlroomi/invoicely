@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/services/pdf_generator.dart';
+import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
@@ -403,14 +404,14 @@ class _ItemsSection extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '\$${item.unitPrice.toStringAsFixed(2)}',
+                      formatAmount(item.unitPrice, invoice.client.value?.currency),
                       textAlign: TextAlign.right,
                     ),
                   ),
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '\$${item.total.toStringAsFixed(2)}',
+                      formatAmount(item.total, invoice.client.value?.currency),
                       textAlign: TextAlign.right,
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
@@ -440,10 +441,11 @@ class _TotalsSection extends StatelessWidget {
       icon: Icons.calculate_outlined,
       child: Column(
         children: [
-          _TotalRow(label: 'Subtotal', value: invoice.subTotal),
+          _TotalRow(label: 'Subtotal', value: invoice.subTotal, currency: invoice.client.value?.currency),
           _TotalRow(
             label: 'Tax (${invoice.taxRate.toStringAsFixed(0)}%)',
             value: invoice.taxAmount,
+            currency: invoice.client.value?.currency,
           ),
           const Divider(),
           _TotalRow(
@@ -451,6 +453,7 @@ class _TotalsSection extends StatelessWidget {
             value: invoice.totalAmount,
             isBold: true,
             fontSize: 16,
+            currency: invoice.client.value?.currency,
           ),
         ],
       ),
@@ -461,12 +464,14 @@ class _TotalsSection extends StatelessWidget {
 class _TotalRow extends StatelessWidget {
   final String label;
   final double value;
+  final String? currency;
   final bool isBold;
   final double fontSize;
 
   const _TotalRow({
     required this.label,
     required this.value,
+    this.currency,
     this.isBold = false,
     this.fontSize = 14,
   });
@@ -483,7 +488,7 @@ class _TotalRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: style),
-          Text('\$${value.toStringAsFixed(2)}', style: style),
+          Text(formatAmount(value, currency), style: style),
         ],
       ),
     );

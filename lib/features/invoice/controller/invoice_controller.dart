@@ -156,7 +156,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
         result.add(invoice);
       }
     }
-    return invoices;
+    return result;
   }
 
   Future<void> updateInvoiceStatus(

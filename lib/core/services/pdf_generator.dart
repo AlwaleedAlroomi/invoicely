@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/results/result.dart';
+import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/data/local/isar_business_profile_service.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:pdf/pdf.dart';
@@ -95,7 +96,7 @@ class InvoicePDFService {
 
     String formatDate(DateTime date) => DateFormat.yMMMd('en_US').format(date);
 
-    String formatCurrency(double amount) => '\$${amount.toStringAsFixed(2)}';
+    String formatCurrency(double amount) => formatAmount(amount, invoice.client.value?.currency);
 
     // status color
     PdfColor statusColor() {

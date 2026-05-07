@@ -52,6 +52,17 @@ final clientInvoicesProvider =
       }
     });
 
+final allInvoicesProvider = FutureProvider<List<InvoiceModel>>((ref) async {
+  ref.watch(invoiceControllerProvider);
+  final result = await ref.read(invoiceRepositoryProvider).getAllInvoices();
+  switch (result) {
+    case Success(:final data):
+      return data;
+    case Error(:final failure):
+      throw failure.message;
+  }
+});
+
 final productInvoicesProvider =
     FutureProvider.family<List<InvoiceModel>, String>((
       ref,

@@ -135,6 +135,7 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'client_form_fab',
           onPressed: () {
             Navigator.of(
               context,

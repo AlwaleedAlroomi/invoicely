@@ -21,9 +21,10 @@ The "Complex Transaction" phase. Handling data linking, real-time calculations, 
 The "Skeleton" of Invoicely. Managing navigation, global settings, and the dashboard.
 
 ### 🏠 Home Screen (Dashboard)
-- [ ] **H1.1 Summary Cards**: Build horizontal scrolling cards for "Total Revenue," "Pending Invoices," and "Active Clients."
-- [ ] **H1.2 Recent Activity**: A list of the last 5 invoices created for quick access.
-- [ ] **H1.3 Quick Actions**: Floating Action Button (FAB) or speed-dial for "New Invoice," "New Client," and "New Product."
+- [x] **H1.1 Summary Cards**: Build horizontal scrolling cards for "Total Revenue," "Pending Invoices," and "Active Clients."
+- [x] **H1.2 Recent Activity**: A list of the last 5 invoices created for quick access.
+- [x] **H1.3 Quick Actions**: Quick action cards for "New Invoice," "New Client," and "New Product."
+- [x] **H1.4 Navigation Shell**: Bottom navigation bar with Dashboard, Invoices, Clients, Products, and Settings tabs.
 
 ### ⚙️ Settings Screen
 - [ ] **S1.1 Business Profile**: Fields to save user's business name, logo (file path), and tax info (used for PDF generation).

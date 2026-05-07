@@ -30,6 +30,7 @@ final clientSortTypeProvider =
     });
 
 final allClientsProvider = FutureProvider<List<ClientModel>>((ref) async {
+  ref.watch(clientControllerProvider);
   final result = await ref.read(clientRepositoryProvider).getAllClients();
   switch (result) {
     case Success(:final data):

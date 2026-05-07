@@ -4,6 +4,7 @@ import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/theme/app_colors.dart';
+import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/controller/invoice_controller.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
@@ -131,6 +132,7 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'invoice_form_fab',
           onPressed: () async {
             await Navigator.of(context).push(
               FadeThroughRoute(page: InvoiceFormScreen(initialInvoice: null)),
@@ -319,7 +321,7 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
                             ),
                           ),
                           Text(
-                            '\$${invoice.totalAmount.toStringAsFixed(2)}',
+                            formatAmount(invoice.totalAmount, invoice.client.value?.currency),
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),

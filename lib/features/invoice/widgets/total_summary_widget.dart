@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 
 class TotalsSummarySection extends ConsumerWidget {
@@ -50,17 +51,17 @@ class TotalsSummarySection extends ConsumerWidget {
           const Divider(height: 24),
           _SummaryRow(
             label: 'Subtotal',
-            value: '\$${state.subTotal.toStringAsFixed(2)}',
+            value: formatAmount(state.subTotal, state.currency),
           ),
           const SizedBox(height: 6),
           _SummaryRow(
             label: 'Tax (${state.taxRate.toStringAsFixed(0)}%)',
-            value: '\$${state.taxAmount.toStringAsFixed(2)}',
+            value: formatAmount(state.taxAmount, state.currency),
           ),
           const Divider(height: 16),
           _SummaryRow(
             label: 'Total',
-            value: '\$${state.totalAmount.toStringAsFixed(2)}',
+            value: formatAmount(state.totalAmount, state.currency),
             isBold: true,
             fontSize: 16,
           ),

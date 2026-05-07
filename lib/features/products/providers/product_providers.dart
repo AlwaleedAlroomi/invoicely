@@ -39,6 +39,7 @@ final sortTypeProvider =
     });
 
 final allProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
+  ref.watch(productControllerProvider);
   final result = await ref
       .read(productRepositoryProvider)
       .getAllActiveProducts();

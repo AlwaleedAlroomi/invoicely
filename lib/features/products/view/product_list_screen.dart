@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/theme/app_colors.dart';
+import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/core/widgets/product_qr_dialog.dart';
 import 'package:invoicely/core/widgets/product_scanner_screen.dart';
@@ -13,6 +14,7 @@ import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/products/view/product_form_screen.dart';
 import 'package:invoicely/features/products/view/product_view_screen.dart';
+import 'package:invoicely/features/settings/data/default_settings.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -253,6 +255,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'product_form_fab',
           onPressed: () {
             Navigator.of(
               context,
@@ -589,8 +592,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Widget _buildPriceText(ProductModel product) {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final currency = DefaultSettings.getCurrency(prefs);
     return Text(
-      "\$${product.unitPrice.toStringAsFixed(2)}",
+      formatAmount(product.unitPrice, currency),
       style: const TextStyle(
         color: AppColors.primary,
         fontWeight: FontWeight.w600,
