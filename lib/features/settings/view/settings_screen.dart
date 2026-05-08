@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/data/local/isar_service.dart';
+import 'package:invoicely/features/clients/data/client_model.dart';
+import 'package:invoicely/features/clients/providers/client_providers.dart';
+import 'package:invoicely/features/invoice/data/invoice_model.dart';
+import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
+import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
+import 'package:invoicely/features/settings/data/business_profile_model.dart';
 import 'package:invoicely/features/settings/data/default_settings.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/features/settings/view/business_profile_screen.dart';
 import 'package:invoicely/features/settings/view/export_to_csv_screen.dart';
 import 'package:invoicely/features/settings/view/export_to_xlsx_screen.dart';
+import 'package:invoicely/features/settings/view/import_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -33,6 +40,15 @@ class SettingsScreen extends ConsumerWidget {
           _ThemeModeTile(),
           _PrimaryColorTile(),
           _SectionHeader(title: 'Data'),
+          ListTile(
+            leading: const Icon(Icons.download_outlined),
+            title: const Text('Import Data'),
+            subtitle: const Text('Import clients or products from Excel'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(
+              context,
+            ).push(FadeThroughRoute(page: const ImportScreen())),
+          ),
           _BackupRestoreTile(),
           _ClearDataTile(),
         ],
@@ -336,10 +352,10 @@ class _BackupRestoreTile extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.backup_outlined),
       title: Text(
-        'Backup & Restore',
+        'Backup Data',
         style: Theme.of(context).textTheme.titleMedium,
       ),
-      subtitle: const Text('Export or import your data'),
+      subtitle: const Text('Export Data'),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
         showDialog(
@@ -409,10 +425,26 @@ class _ClearDataTile extends ConsumerWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              // await IsarService.instance.writeTxn(() async {
-              //   await IsarService.instance.clear();
-              // });
-              // if (context.mounted) Navigator.pop(context);
+              await IsarService.instance.writeTxn(() async {
+                await IsarService.instance.invoiceModels.clear();
+                await IsarService.instance.clientModels.clear();
+                await IsarService.instance.productModels.clear();
+                await IsarService.instance.businessProfileModels.clear();
+              });
+              ref.invalidate(allInvoicesProvider);
+              ref.invalidate(allClientsProvider);
+              ref.invalidate(allProductsProvider);
+              ref.invalidate(invoiceControllerProvider);
+              ref.invalidate(clientControllerProvider);
+              ref.invalidate(productControllerProvider);
+              if (context.mounted) Navigator.pop(context);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('All data cleared successfully'),
+                  ),
+                );
+              }
             },
             child: const Text(
               'Delete Everything',

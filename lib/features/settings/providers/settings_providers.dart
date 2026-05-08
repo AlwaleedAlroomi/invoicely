@@ -6,8 +6,10 @@ import 'package:invoicely/data/repositories/business_profile_repository_impl.dar
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/settings/controller/export_csv_controller.dart';
 import 'package:invoicely/features/settings/controller/export_xlsx_controller.dart';
+import 'package:invoicely/features/settings/controller/import_controller.dart';
 import 'package:invoicely/features/settings/repository/business_profile_repository.dart';
 import 'package:invoicely/features/settings/services/csv_export_service.dart';
+import 'package:invoicely/features/settings/services/import_service.dart';
 import 'package:invoicely/features/settings/services/xlsx_export_service.dart';
 
 final themeControllerProvider =
@@ -50,4 +52,14 @@ final exportXlsxServiceProvider = Provider<XlsxExportService>((ref) {
 final exportXlsxControllerProvider =
     StateNotifierProvider<ExportXlsxController, ExportXlsxState>((ref) {
       return ExportXlsxController(ref.read(exportXlsxServiceProvider));
+    });
+
+final xlsxImportServiceProvider = Provider<XlsxImportService>((ref) {
+  return XlsxImportService();
+});
+
+final importControllerProvider =
+    StateNotifierProvider<ImportController, ImportState>((ref) {
+      final xlsxImportService = ref.read(xlsxImportServiceProvider);
+      return ImportController(xlsxImportService);
     });
