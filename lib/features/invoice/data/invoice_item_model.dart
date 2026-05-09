@@ -1,7 +1,3 @@
-import 'package:isar/isar.dart';
-part 'invoice_item_model.g.dart';
-
-@Embedded()
 class InvoiceItemModel {
   late String productId;
   late String productName;
@@ -34,4 +30,21 @@ class InvoiceItemModel {
     }
     return '';
   }
+
+  Map<String, dynamic> toJson() => {
+        'productId': productId,
+        'productName': productName,
+        'unitPrice': unitPrice,
+        'quantity': quantity,
+        'total': total,
+      };
+
+  factory InvoiceItemModel.fromJson(Map<String, dynamic> json) =>
+      InvoiceItemModel.create(
+        productId: json['productId'] as String,
+        productName: json['productName'] as String,
+        unitPrice: (json['unitPrice'] as num).toDouble(),
+        quantity: json['quantity'] as int,
+        total: (json['total'] as num).toDouble(),
+      );
 }

@@ -1,24 +1,53 @@
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:invoicely/data/local/isar_service.dart';
-import 'package:isar/isar.dart';
-import 'package:invoicely/features/clients/data/client_model.dart';
+import 'package:invoicely/core/enum/invoice_status.dart';
+import 'package:invoicely/data/database/database.dart';
+import 'package:invoicely/data/services/client_service.dart';
+import 'package:invoicely/data/services/product_service.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
-import 'package:invoicely/features/products/data/product_model.dart';
 
 class ExportService {
-  final Isar _isar = IsarService.instance;
+  final AppDatabase _db;
+  ExportService(this._db);
+
+  Future<List<InvoiceModel>> _getAllInvoicesWithClients() async {
+    final rows = await _db.select(_db.invoices).get();
+    final models = <InvoiceModel>[];
+    for (final row in rows) {
+      Client? clientRow;
+      try {
+        clientRow = await (_db.select(_db.clients)
+              ..where((t) => t.remoteId.equals(row.clientRemoteId)))
+            .getSingleOrNull();
+      } catch (_) {}
+      models.add(InvoiceModel(
+        remoteId: row.remoteId,
+        client: clientRow != null ? ClientService.fromRow(clientRow) : null,
+        invoiceNumber: row.invoiceNumber,
+        issueDate: row.issueDate,
+        dueDate: row.dueDate,
+        taxRate: row.taxRate,
+        subTotal: row.subTotal,
+        taxAmount: row.taxAmount,
+        totalAmount: row.totalAmount,
+        items: row.items ?? [],
+        status: row.status ?? InvoiceStatus.draft,
+        notes: row.notes,
+        terms: row.terms,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        isActive: row.isActive,
+      ));
+    }
+    return models;
+  }
 
   // ── INVOICES ──────────────────────────────────
   Future<String> exportInvoices({String? directoryPath}) async {
-    final invoices = await _isar.invoiceModels.where().findAll();
-    for (final invoice in invoices) {
-      await invoice.client.load();
-    }
+    final invoices = await _getAllInvoicesWithClients();
 
     final rows = <List<dynamic>>[
-      // header row
       [
         'Invoice Number',
         'Client Name',
@@ -34,12 +63,11 @@ class ExportService {
         'Notes',
         'Created At',
       ],
-      // data rows
       ...invoices.map(
         (invoice) => [
           invoice.invoiceNumber,
-          invoice.client.value?.name ?? 'Unknown',
-          invoice.client.value?.email ?? '',
+          invoice.client?.name ?? 'Unknown',
+          invoice.client?.email ?? '',
           _formatDate(invoice.issueDate),
           _formatDate(invoice.dueDate),
           invoice.status.name,
@@ -59,7 +87,7 @@ class ExportService {
 
   // ── INVOICE ITEMS ─────────────────────────────
   Future<String> exportInvoiceItems({String? directoryPath}) async {
-    final invoices = await _isar.invoiceModels.where().findAll();
+    final invoices = await _getAllInvoicesWithClients();
 
     final rows = <List<dynamic>>[
       [
@@ -89,9 +117,10 @@ class ExportService {
 
   // ── CLIENTS ───────────────────────────────────
   Future<String> exportClients({String? directoryPath}) async {
-    final clients = await _isar.clientModels.where().findAll();
+    final rows = await _db.select(_db.clients).get();
+    final clients = rows.map((r) => ClientService.fromRow(r)).toList();
 
-    final rows = <List<dynamic>>[
+    final csvRows = <List<dynamic>>[
       [
         'Name',
         'Email',
@@ -130,14 +159,15 @@ class ExportService {
       ),
     ];
 
-    return _saveCsv(rows, 'clients', directoryPath: directoryPath);
+    return _saveCsv(csvRows, 'clients', directoryPath: directoryPath);
   }
 
   // ── PRODUCTS ──────────────────────────────────
   Future<String> exportProducts({String? directoryPath}) async {
-    final products = await _isar.productModels.where().findAll();
+    final rows = await _db.select(_db.products).get();
+    final products = rows.map((r) => ProductService.fromRow(r)).toList();
 
-    final rows = <List<dynamic>>[
+    final csvRows = <List<dynamic>>[
       [
         'Name',
         'SKU',
@@ -161,7 +191,7 @@ class ExportService {
       ),
     ];
 
-    return _saveCsv(rows, 'products', directoryPath: directoryPath);
+    return _saveCsv(csvRows, 'products', directoryPath: directoryPath);
   }
 
   // ── EXPORT ALL ────────────────────────────────

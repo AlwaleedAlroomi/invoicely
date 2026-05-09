@@ -295,7 +295,7 @@ class _ClientSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = invoice.client.value;
+    final client = invoice.client;
 
     return _SectionCard(
       title: 'Bill To',
@@ -404,14 +404,14 @@ class _ItemsSection extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      formatAmount(item.unitPrice, invoice.client.value?.currency),
+                      formatAmount(item.unitPrice, invoice.client?.currency),
                       textAlign: TextAlign.right,
                     ),
                   ),
                   Expanded(
                     flex: 2,
                     child: Text(
-                      formatAmount(item.total, invoice.client.value?.currency),
+                      formatAmount(item.total, invoice.client?.currency),
                       textAlign: TextAlign.right,
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
@@ -441,11 +441,15 @@ class _TotalsSection extends StatelessWidget {
       icon: Icons.calculate_outlined,
       child: Column(
         children: [
-          _TotalRow(label: 'Subtotal', value: invoice.subTotal, currency: invoice.client.value?.currency),
+          _TotalRow(
+            label: 'Subtotal',
+            value: invoice.subTotal,
+            currency: invoice.client?.currency,
+          ),
           _TotalRow(
             label: 'Tax (${invoice.taxRate.toStringAsFixed(0)}%)',
             value: invoice.taxAmount,
-            currency: invoice.client.value?.currency,
+            currency: invoice.client?.currency,
           ),
           const Divider(),
           _TotalRow(
@@ -453,7 +457,7 @@ class _TotalsSection extends StatelessWidget {
             value: invoice.totalAmount,
             isBold: true,
             fontSize: 16,
-            currency: invoice.client.value?.currency,
+            currency: invoice.client?.currency,
           ),
         ],
       ),
@@ -587,7 +591,7 @@ class _BottomActions extends ConsumerWidget {
                             canDebug: false,
                             initialPageFormat: PdfPageFormat.a4,
                             pdfFileName:
-                                '${invoice.client.value!.displayName} invoice - ${invoice.displayName}.pdf',
+                                '${invoice.client!.displayName} invoice - ${invoice.displayName}.pdf',
                           ),
                         ),
                         actions: [
@@ -609,7 +613,7 @@ class _BottomActions extends ConsumerWidget {
                                       final path = await InvoicePDFService()
                                           .savePDF(
                                             pdf,
-                                            '${invoice.client.value!.displayName} invoice - ${invoice.displayName}',
+                                            '${invoice.client!.displayName} invoice - ${invoice.displayName}',
                                           );
                                       if (!context.mounted) return;
                                       Navigator.pop(dialogContext);
@@ -692,7 +696,7 @@ class _BottomActions extends ConsumerWidget {
                       .updateInvoiceStatus(invoice, value);
 
                   final updatedInvoice = invoice.copyWith(status: value);
-                  updatedInvoice.client.value = invoice.client.value;
+                  updatedInvoice.client = invoice.client;
                   onStatusChanged(updatedInvoice);
                   if (context.mounted) Navigator.pop(context);
                 },

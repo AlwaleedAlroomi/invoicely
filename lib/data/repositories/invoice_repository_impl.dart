@@ -2,13 +2,13 @@ import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_invoice_service.dart';
+import 'package:invoicely/data/services/invoice_service.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/repository/invoice_repository.dart';
 
 class InvoiceRepositoryImpl implements InvoiceRepository {
-  final IsarInvoiceService _invoiceService;
+  final InvoiceService _invoiceService;
   const InvoiceRepositoryImpl(this._invoiceService);
 
   @override
@@ -27,7 +27,11 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     ClientModel client,
   ) async {
     try {
-      final result = await _invoiceService.createInvoice(invoice, client);
+      invoice.client = client;
+      final result = await _invoiceService.createInvoice(
+        invoice,
+        client.remoteId!,
+      );
       switch (result) {
         case Success():
           return Success(result.data);

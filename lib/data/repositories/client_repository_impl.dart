@@ -1,14 +1,11 @@
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_client_service.dart';
-import 'package:invoicely/data/local/isar_service.dart';
+import 'package:invoicely/data/services/client_service.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/repository/client_repository.dart';
-import 'package:isar/isar.dart';
 
 class ClientRepositoryImpl implements ClientRepository {
-  final IsarClientService _clientService;
-  final Isar _isar = IsarService.instance;
+  final ClientService _clientService;
 
   ClientRepositoryImpl(this._clientService);
 
@@ -76,7 +73,7 @@ class ClientRepositoryImpl implements ClientRepository {
       return Success(client);
     } catch (e) {
       return Error(
-        AppFailure('Unexpected error fetching client with emai: $e'),
+        AppFailure('Unexpected error fetching client with email: $e'),
       );
     }
   }

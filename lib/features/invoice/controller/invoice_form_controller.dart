@@ -116,7 +116,7 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
   // for edit mode — load existing invoice into state
   void loadInvoice(InvoiceModel invoice) {
     state = InvoiceFormState(
-      selectedClient: invoice.client.value,
+      selectedClient: invoice.client,
       items: invoice.items,
       taxRate: invoice.taxRate,
       issueDate: invoice.issueDate,
@@ -265,6 +265,7 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
     state = state.copyWith(isLoading: true, error: null);
 
     final invoice = InvoiceModel(
+      client: state.selectedClient,
       invoiceNumber: state.invoiceNumber,
       issueDate: state.issueDate,
       dueDate: state.dueDate,
@@ -316,8 +317,8 @@ class InvoiceFormController extends StateNotifier<InvoiceFormState> {
       notes: state.notes,
       terms: state.terms,
     );
-    if (original.client.value != newClient && newClient != null) {
-      updated.client.value = newClient;
+    if (original.client != newClient && newClient != null) {
+      updated.client = newClient;
     }
 
     final result = await _repo.updateInvoice(original, updated);

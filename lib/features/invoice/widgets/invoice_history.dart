@@ -134,7 +134,7 @@ class InvoiceHistoryTile extends ConsumerWidget {
           await Navigator.of(context).push(
             FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
           );
-          final clientRemoteId = invoice.client.value?.remoteId;
+          final clientRemoteId = invoice.client?.remoteId;
           if (clientRemoteId != null) {
             ref.invalidate(clientInvoicesProvider(clientRemoteId));
           }

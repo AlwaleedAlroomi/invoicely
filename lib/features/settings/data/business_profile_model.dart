@@ -1,10 +1,5 @@
-// lib/features/settings/data/business_profile_model.dart
-import 'package:isar/isar.dart';
-part 'business_profile_model.g.dart';
-
-@collection
 class BusinessProfileModel {
-  Id isarId = Isar.autoIncrement;
+  int? isarId;
 
   late String businessName;
   String? logoPath;
@@ -20,6 +15,7 @@ class BusinessProfileModel {
   String? country;
 
   BusinessProfileModel({
+    this.isarId,
     required this.businessName,
     this.logoPath,
     this.taxNumber,
@@ -61,7 +57,7 @@ class BusinessProfileModel {
       state: state ?? this.state,
       zipCode: zipCode ?? this.zipCode,
       country: country ?? this.country,
-    )..isarId = isarId;
+    );
   }
 
   String get displayName => businessName;

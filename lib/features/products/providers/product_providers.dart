@@ -1,20 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_product_service.dart';
+import 'package:invoicely/data/database/providers.dart';
 import 'package:invoicely/data/repositories/product_repository_impl.dart';
+import 'package:invoicely/data/services/product_service.dart';
 import 'package:invoicely/features/products/controller/product_controller.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/repository/product_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final isarProductServiceProvider = Provider<IsarProductService>((ref) {
-  return IsarProductService();
+final productServiceProvider = Provider<ProductService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return ProductService(db);
 });
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
-  final isarService = ref.watch(isarProductServiceProvider);
-  return ProductRepositoryImpl(isarService);
+  final service = ref.watch(productServiceProvider);
+  return ProductRepositoryImpl(service);
 });
 
 final productControllerProvider =

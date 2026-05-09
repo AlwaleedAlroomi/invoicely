@@ -69,7 +69,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
           createdAt: widget.initialInvoice?.createdAt ?? DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        invoice.client.value = state.selectedClient;
+        invoice.client = state.selectedClient;
         ref.invalidate(allProductsProvider);
         Navigator.of(context).pop(invoice);
       }

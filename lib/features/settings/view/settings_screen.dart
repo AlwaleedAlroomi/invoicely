@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
-import 'package:invoicely/data/local/isar_service.dart';
-import 'package:invoicely/features/clients/data/client_model.dart';
+import 'package:invoicely/data/database/providers.dart';
 import 'package:invoicely/features/clients/providers/client_providers.dart';
-import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
-import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
-import 'package:invoicely/features/settings/data/business_profile_model.dart';
 import 'package:invoicely/features/settings/data/default_settings.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/features/settings/view/business_profile_screen.dart';
@@ -425,12 +421,11 @@ class _ClearDataTile extends ConsumerWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              await IsarService.instance.writeTxn(() async {
-                await IsarService.instance.invoiceModels.clear();
-                await IsarService.instance.clientModels.clear();
-                await IsarService.instance.productModels.clear();
-                await IsarService.instance.businessProfileModels.clear();
-              });
+              final db = ref.read(appDatabaseProvider);
+              await db.delete(db.invoices).go();
+              await db.delete(db.clients).go();
+              await db.delete(db.products).go();
+              await db.delete(db.businessProfiles).go();
               ref.invalidate(allInvoicesProvider);
               ref.invalidate(allClientsProvider);
               ref.invalidate(allProductsProvider);

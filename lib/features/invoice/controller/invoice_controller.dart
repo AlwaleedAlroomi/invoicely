@@ -285,7 +285,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
 
       filtered = filtered.where((invoice) {
         return invoice.displayName.toLowerCase().contains(query) ||
-            invoice.client.value!.name.toLowerCase().contains(query) ||
+            invoice.client!.name.toLowerCase().contains(query) ||
             invoice.totalAmount.toString().contains(query);
       }).toList();
     }

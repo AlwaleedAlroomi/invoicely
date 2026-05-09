@@ -156,7 +156,7 @@ class DashboardScreen extends ConsumerWidget {
       case InvoiceStatus.cancelled: statusColor = Colors.orange;
       case InvoiceStatus.sent: statusColor = Colors.blue;
     }
-    final client = invoice.client.value;
+    final client = invoice.client;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -178,7 +178,7 @@ class DashboardScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(formatAmount(invoice.totalAmount, invoice.client.value?.currency),
+            Text(formatAmount(invoice.totalAmount, invoice.client?.currency),
               style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
             Text(invoice.status.name.toUpperCase(),
               style: TextStyle(fontSize: 10, color: statusColor, fontWeight: FontWeight.bold)),

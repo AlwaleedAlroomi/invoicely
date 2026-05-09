@@ -1,12 +1,12 @@
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_product_service.dart';
+import 'package:invoicely/data/services/product_service.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/repository/product_repository.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
-  final IsarProductService _productService;
+  final ProductService _productService;
 
   const ProductRepositoryImpl(this._productService);
 
@@ -27,7 +27,6 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<ProductModel>> getProductByRemoteId(
     ProductModel product,
   ) async {
-    // TODO: implement getProductByRemoteId
     try {
       final searchedProduct = await _productService.getProductByRemoteId(
         product,
@@ -56,7 +55,6 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Result<ProductModel>> createProduct(ProductModel product) async {
-    // TODO: implement saveProduct
     try {
       final result = await _productService.createProduct(product);
       switch (result) {
@@ -87,7 +85,6 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Result<ProductModel>> getProductBySku(String sku) async {
-    // TODO: implement getProductBySku
     try {
       final product = await _productService.getProductBySku(sku);
       if (product == null) {

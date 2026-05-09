@@ -5,13 +5,17 @@ import 'package:intl/intl.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
-import 'package:invoicely/data/local/isar_business_profile_service.dart';
+import 'package:invoicely/data/services/business_profile_service.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
+import 'package:invoicely/features/settings/data/business_profile_model.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:arabic_reshaper/arabic_reshaper.dart';
 
 class InvoicePDFService {
+  final BusinessProfileService? _businessProfileService;
+  InvoicePDFService([this._businessProfileService]);
+
   Future<String?> savePDF(pw.Document pdf, String fileName) async {
     final selectedDir = await FilePicker.getDirectoryPath(
       dialogTitle: 'Save Invoice PDF',
@@ -26,7 +30,7 @@ class InvoicePDFService {
 
   Future<pw.Document> generateInvoicePDF(InvoiceModel invoice) async {
     final pdf = pw.Document();
-    final client = invoice.client.value;
+    final client = invoice.client;
     final pw.Font arabicFont = pw.Font.ttf(
       await rootBundle.load("assets/fonts/Amiri-Regular.ttf"),
     );
@@ -34,8 +38,9 @@ class InvoicePDFService {
       await rootBundle.load("assets/fonts/Amiri-Bold.ttf"),
     );
 
-    final profileResult = await IsarBusinessProfileService()
-        .getBusinessProfile();
+    final profileResult = _businessProfileService != null
+        ? await _businessProfileService.getBusinessProfile()
+        : null;
 
     // // Using a switch expression to handle both cases
     // final businessName = switch (profileResult) {
@@ -50,8 +55,9 @@ class InvoicePDFService {
     // };
 
     final profile = switch (profileResult) {
-      Success() => profileResult.data,
-      Error() => null,
+      Success<BusinessProfileModel>(:final data) => data,
+      Error<BusinessProfileModel>() => null,
+      null => null,
     };
 
     pw.MemoryImage? logoImage;
@@ -96,7 +102,7 @@ class InvoicePDFService {
 
     String formatDate(DateTime date) => DateFormat.yMMMd('en_US').format(date);
 
-    String formatCurrency(double amount) => formatAmount(amount, invoice.client.value?.currency);
+    String formatCurrency(double amount) => formatAmount(amount, invoice.client?.currency);
 
     // status color
     PdfColor statusColor() {

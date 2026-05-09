@@ -1,27 +1,41 @@
 import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_business_profile_service.dart';
+import 'package:invoicely/data/services/business_profile_service.dart';
 import 'package:invoicely/features/settings/data/business_profile_model.dart';
 import 'package:invoicely/features/settings/repository/business_profile_repository.dart';
 
 class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
-  final IsarBusinessProfileService _profileService;
+  final BusinessProfileService _profileService;
 
   const BusinessProfileRepositoryImpl(this._profileService);
 
   @override
   Future<Result<BusinessProfileModel?>> getBusinessProfile() async {
-    return await _profileService.getBusinessProfile();
+    final result = await _profileService.getBusinessProfile();
+    switch (result) {
+      case Success():
+        return Success(result.data);
+      case Error<void> e:
+        if (e.failure.message.contains('No Profile')) {
+          return const Success(null);
+        }
+        return Error(e.failure);
+    }
   }
 
   @override
   Future<Result<void>> saveBusinessProfile(BusinessProfileModel profile) async {
     try {
-      final result = await _profileService.createProfile(profile);
-      switch (result) {
+      final existing = await _profileService.getBusinessProfile();
+      switch (existing) {
         case Success():
-          return Success(null);
+          await _profileService.updateProfile(profile);
+          return const Success(null);
         case Error<void> e:
+          if (e.failure.message.contains('No Profile')) {
+            await _profileService.createProfile(profile);
+            return const Success(null);
+          }
           return Error(e.failure);
       }
     } catch (e) {
@@ -34,7 +48,7 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
     BusinessProfileModel businessProfile,
   ) async {
     try {
-      final result = await _profileService.updateClient(businessProfile);
+      final result = await _profileService.updateProfile(businessProfile);
       switch (result) {
         case Success():
           return Success(result.data);

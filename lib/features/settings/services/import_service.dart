@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:drift/drift.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:invoicely/data/local/isar_service.dart';
-import 'package:isar/isar.dart';
+import 'package:invoicely/data/database/database.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
 
@@ -23,7 +23,8 @@ class ImportResult {
 }
 
 class XlsxImportService {
-  final Isar _isar = IsarService.instance;
+  final AppDatabase _db;
+  XlsxImportService(this._db);
 
   // ── PICK FILE ─────────────────────────────────
   Future<String?> pickFile() async {
@@ -50,14 +51,12 @@ class XlsxImportService {
       final excel = Excel.decodeBytes(bytes);
       final sheet = excel['Clients'];
 
-      // skip header row — start from index 1
       final rows = sheet.rows.skip(1).toList();
 
       for (int i = 0; i < rows.length; i++) {
         try {
           final row = rows[i];
 
-          // skip empty rows
           if (row.isEmpty || _cellValue(row, 0).isEmpty) {
             skipped++;
             continue;
@@ -66,12 +65,9 @@ class XlsxImportService {
           final name = _cellValue(row, 0);
           final email = _cellValue(row, 1);
 
-          // check duplicate by email
-          final existing = await _isar.clientModels
-              .where()
-              .filter()
-              .emailEqualTo(email)
-              .findFirst();
+          final existing = await (_db.select(
+            _db.clients,
+          )..where((t) => t.email.equals(email))).getSingleOrNull();
 
           if (existing != null) {
             skipped++;
@@ -97,9 +93,29 @@ class XlsxImportService {
             updatedAt: DateTime.now(),
           );
 
-          await _isar.writeTxn(() async {
-            await _isar.clientModels.put(client);
-          });
+          await _db
+              .into(_db.clients)
+              .insert(
+                ClientsCompanion(
+                  remoteId: Value(client.remoteId!),
+                  name: Value(client.name),
+                  email: Value(client.email),
+                  phone: Value(client.phone),
+                  website: Value(client.website),
+                  addressLine1: Value(client.addressLine1),
+                  addressLine2: Value(client.addressLine2),
+                  city: Value(client.city),
+                  state: Value(client.state),
+                  zipCode: Value(client.zipCode),
+                  country: Value(client.country),
+                  taxNumber: Value(client.taxNumber),
+                  currency: Value(client.currency),
+                  notes: Value(client.notes),
+                  isActive: Value(client.isActive),
+                  createdAt: Value(client.createdAt),
+                  updatedAt: Value(client.updatedAt),
+                ),
+              );
 
           added++;
         } catch (e) {
@@ -148,13 +164,10 @@ class XlsxImportService {
           final name = _cellValue(row, 0);
           final sku = _cellValueOrNull(row, 1);
 
-          // check duplicate by sku if exists
           if (sku != null) {
-            final existing = await _isar.productModels
-                .where()
-                .filter()
-                .skuEqualTo(sku)
-                .findFirst();
+            final existing = await (_db.select(
+              _db.products,
+            )..where((t) => t.sku.equals(sku))).getSingleOrNull();
 
             if (existing != null) {
               skipped++;
@@ -173,9 +186,22 @@ class XlsxImportService {
             lastUpdated: DateTime.now(),
           );
 
-          await _isar.writeTxn(() async {
-            await _isar.productModels.put(product);
-          });
+          await _db
+              .into(_db.products)
+              .insert(
+                ProductsCompanion(
+                  remoteId: Value(product.remoteId!),
+                  name: Value(product.name),
+                  description: Value(product.description),
+                  unitPrice: Value(product.unitPrice),
+                  imagePath: const Value(null),
+                  stockQuantity: Value(product.stockQuantity),
+                  sku: Value(product.sku),
+                  isActive: Value(product.isActive),
+                  createdAt: Value(product.createdAt),
+                  lastUpdated: Value(product.lastUpdated),
+                ),
+              );
 
           added++;
         } catch (e) {
@@ -210,7 +236,6 @@ class XlsxImportService {
 
   bool _cellBool(List<Data?> row, int index) {
     final value = _cellValue(row, index).toLowerCase();
-    // handle all possible values
     switch (value) {
       case 'yes':
       case 'true':
@@ -221,7 +246,7 @@ class XlsxImportService {
       case '0':
         return false;
       default:
-        return true; // default to active if unrecognized
+        return true;
     }
   }
 }

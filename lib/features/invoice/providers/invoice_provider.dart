@@ -1,21 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_invoice_service.dart';
+import 'package:invoicely/data/database/providers.dart';
 import 'package:invoicely/data/repositories/invoice_repository_impl.dart';
+import 'package:invoicely/data/services/invoice_service.dart';
 import 'package:invoicely/features/invoice/controller/invoice_controller.dart';
 import 'package:invoicely/features/invoice/controller/invoice_form_controller.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/repository/invoice_repository.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 
-final isarInvoiceServiceProvider = Provider<IsarInvoiceService>((ref) {
-  return IsarInvoiceService();
+final invoiceServiceProvider = Provider<InvoiceService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return InvoiceService(db);
 });
 
 final invoiceRepositoryProvider = Provider<InvoiceRepository>((ref) {
-  final isarService = ref.watch(isarInvoiceServiceProvider);
-  return InvoiceRepositoryImpl(isarService);
+  final service = ref.watch(invoiceServiceProvider);
+  return InvoiceRepositoryImpl(service);
 });
 
 final invoiceControllerProvider =

@@ -220,7 +220,7 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
   }
 
   Widget _buildInvoiceCard(BuildContext context, InvoiceModel invoice) {
-    final client = invoice.client.value;
+    final client = invoice.client;
 
     // 2. Define status colors (You can move this to your InvoiceStatus enum later)
     Color statusColor;
@@ -321,7 +321,7 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
                             ),
                           ),
                           Text(
-                            formatAmount(invoice.totalAmount, invoice.client.value?.currency),
+                            formatAmount(invoice.totalAmount, invoice.client?.currency),
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),

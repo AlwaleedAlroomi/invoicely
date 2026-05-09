@@ -1,20 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/results/result.dart';
-import 'package:invoicely/data/local/isar_client_service.dart';
+import 'package:invoicely/data/database/providers.dart';
 import 'package:invoicely/data/repositories/client_repository_impl.dart';
+import 'package:invoicely/data/services/client_service.dart';
 import 'package:invoicely/features/clients/controller/client_controller.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/repository/client_repository.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 
-final isarClientServiceProvider = Provider<IsarClientService>((ref) {
-  return IsarClientService();
+final clientServiceProvider = Provider<ClientService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return ClientService(db);
 });
 
 final clientRepositoryProvider = Provider<ClientRepository>((ref) {
-  final isarService = ref.watch(isarClientServiceProvider);
-  return ClientRepositoryImpl(isarService);
+  final service = ref.watch(clientServiceProvider);
+  return ClientRepositoryImpl(service);
 });
 
 final clientControllerProvider =

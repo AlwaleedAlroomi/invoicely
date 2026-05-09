@@ -2,21 +2,14 @@ import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/models/sortable_entity.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
-import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
-
-part 'invoice_model.g.dart';
 
 const uuid = Uuid();
 
-@collection
 class InvoiceModel implements SortableEntity {
-  Id isarId = Isar.autoIncrement;
-
-  @Index(unique: true)
+  int? isarId;
   String? remoteId;
-
-  final client = IsarLink<ClientModel>();
+  ClientModel? client;
 
   late String invoiceNumber;
   late DateTime issueDate;
@@ -27,7 +20,6 @@ class InvoiceModel implements SortableEntity {
   late double totalAmount;
   late List<InvoiceItemModel> items;
 
-  @enumerated
   late InvoiceStatus status;
 
   String? notes;
@@ -37,7 +29,9 @@ class InvoiceModel implements SortableEntity {
   late DateTime updatedAt;
 
   InvoiceModel({
+    this.isarId,
     String? remoteId,
+    this.client,
     required this.invoiceNumber,
     required this.issueDate,
     required this.dueDate,
@@ -69,7 +63,9 @@ class InvoiceModel implements SortableEntity {
     bool? isActive,
   }) {
     return InvoiceModel(
+      isarId: isarId,
       remoteId: remoteId,
+      client: client,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       issueDate: issueDate ?? this.issueDate,
       dueDate: dueDate ?? this.dueDate,
@@ -84,7 +80,7 @@ class InvoiceModel implements SortableEntity {
       createdAt: createdAt,
       updatedAt: DateTime.now(),
       isActive: isActive ?? this.isActive,
-    )..isarId = isarId;
+    );
   }
 
   @override

@@ -1,38 +1,23 @@
 import 'package:invoicely/core/models/sortable_entity.dart';
-import 'package:invoicely/features/invoice/data/invoice_model.dart';
-import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
-
-part 'client_model.g.dart';
 
 const uuid = Uuid();
 
-@collection
 class ClientModel implements SortableEntity {
-  Id? isarId = Isar.autoIncrement;
-
-  @Index(unique: true)
+  int? isarId;
   String? remoteId;
-  @Backlink(to: 'client')
-  final invoices = IsarLinks<InvoiceModel>();
   String name;
   String email;
   String? phone;
   String? website;
-
-  // Address
   String? addressLine1;
   String? addressLine2;
   String? city;
   String? state;
   String? zipCode;
   String? country;
-
-  // Business
   String? taxNumber;
   String currency = 'USD';
-
-  // Meta
   String? notes;
   bool isActive = true;
   DateTime createdAt;
@@ -64,7 +49,6 @@ class ClientModel implements SortableEntity {
   }
 
   ClientModel copyWith({
-    Id? isarId,
     String? remoteId,
     String? name,
     String? email,
@@ -102,15 +86,13 @@ class ClientModel implements SortableEntity {
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? DateTime.now(),
       )
-      ..isarId = isarId
-      ..remoteId = this.remoteId;
+        ..isarId = isarId
+        ..remoteId = this.remoteId;
   }
 
   @override
-  // TODO: implement dateCreated
   DateTime get dateCreated => createdAt;
 
   @override
-  // TODO: implement displayName
   String get displayName => name;
 }

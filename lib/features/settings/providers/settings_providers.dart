@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/theme/theme_controller.dart';
-import 'package:invoicely/data/local/isar_business_profile_service.dart';
+import 'package:invoicely/data/database/providers.dart';
 import 'package:invoicely/data/repositories/business_profile_repository_impl.dart';
+import 'package:invoicely/data/services/business_profile_service.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/settings/controller/export_csv_controller.dart';
 import 'package:invoicely/features/settings/controller/export_xlsx_controller.dart';
@@ -23,21 +24,31 @@ final colorControllerProvider = StateNotifierProvider<ColorController, Color>((
   return ColorController(ref.read(sharedPreferencesProvider));
 });
 
-final isarBusinessProfileServiceProvider = Provider<IsarBusinessProfileService>(
-  (ref) {
-    return IsarBusinessProfileService();
-  },
-);
+final businessProfileServiceProvider = Provider<BusinessProfileService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return BusinessProfileService(db);
+});
 
 final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
   ref,
 ) {
-  final isarService = ref.watch(isarBusinessProfileServiceProvider);
-  return BusinessProfileRepositoryImpl(isarService);
+  final service = ref.watch(businessProfileServiceProvider);
+  return BusinessProfileRepositoryImpl(service);
 });
 
 final exportCsvServiceProvider = Provider<ExportService>((ref) {
-  return ExportService();
+  final db = ref.watch(appDatabaseProvider);
+  return ExportService(db);
+});
+
+final exportXlsxServiceProvider = Provider<XlsxExportService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return XlsxExportService(db);
+});
+
+final xlsxImportServiceProvider = Provider<XlsxImportService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return XlsxImportService(db);
 });
 
 final exportCsvControllerProvider =
@@ -45,18 +56,10 @@ final exportCsvControllerProvider =
       return ExportCsvController(ref.read(exportCsvServiceProvider));
     });
 
-final exportXlsxServiceProvider = Provider<XlsxExportService>((ref) {
-  return XlsxExportService();
-});
-
 final exportXlsxControllerProvider =
     StateNotifierProvider<ExportXlsxController, ExportXlsxState>((ref) {
       return ExportXlsxController(ref.read(exportXlsxServiceProvider));
     });
-
-final xlsxImportServiceProvider = Provider<XlsxImportService>((ref) {
-  return XlsxImportService();
-});
 
 final importControllerProvider =
     StateNotifierProvider<ImportController, ImportState>((ref) {
