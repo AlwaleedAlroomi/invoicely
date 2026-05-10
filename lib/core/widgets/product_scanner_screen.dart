@@ -19,11 +19,13 @@ class ScanResult {
 class ProductScannerScreen extends ConsumerStatefulWidget {
   final Function(String sku)? onScan;
   final String title;
+  final String serviceName;
 
   const ProductScannerScreen({
     super.key,
     this.onScan,
     this.title = "Scan Product QR",
+    this.serviceName = 'SKU',
   });
 
   @override
@@ -70,7 +72,6 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
     final String? sku = await scanner.scanBarcodeFromImage(image);
 
     if (sku != null) {
-      print('SKU found: $sku');
       if (!context.mounted) return;
       Navigator.pop(context, sku);
     } else {
@@ -80,6 +81,8 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
 
   @override
   Widget build(BuildContext context) {
+    print(widget.serviceName);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -145,11 +148,13 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
                           style: TextStyle(color: Colors.white),
                         ),
                         const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => _showManualEntryDialog(context, ref),
-                          icon: const Icon(Icons.keyboard),
-                          label: const Text("Enter SKU Manually!!!!"),
-                        ),
+                        if (widget.serviceName == 'SKU')
+                          ElevatedButton.icon(
+                            onPressed: () =>
+                                _showManualEntryDialog(context, ref),
+                            icon: const Icon(Icons.keyboard),
+                            label: Text("Enter SKU Manually!!"),
+                          ),
                       ],
                     ),
                   ),
@@ -158,18 +163,19 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
             ),
           ),
           _ScannerOverlay(),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop(ScanResult(ScanResultType.manual));
-            },
-            icon: const Icon(Icons.keyboard),
-            label: const Text("Enter SKU Manually"),
-          ),
+          if (widget.serviceName == 'SKU')
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop(ScanResult(ScanResultType.manual));
+              },
+              icon: const Icon(Icons.keyboard),
+              label: const Text("Enter SKU Manually"),
+            ),
           IconButton(
             onPressed: () async {
               _handleGalleryScan(context);
             },
-            icon: Icon(Icons.browse_gallery),
+            icon: Icon(Icons.photo, size: 75),
           ),
         ],
       ),

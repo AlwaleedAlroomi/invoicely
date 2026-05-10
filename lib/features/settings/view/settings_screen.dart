@@ -31,7 +31,7 @@ class SettingsScreen extends ConsumerWidget {
           _BusinessProfileTile(),
           _SectionHeader(title: 'Preferences'),
           _DefaultTaxRateTile(),
-          _DefaultCurrencyTile(),
+          // _DefaultCurrencyTile(),
           _SectionHeader(title: 'Appearance'),
           _ThemeModeTile(),
           _PrimaryColorTile(),
@@ -97,8 +97,8 @@ class _BusinessProfileTile extends ConsumerWidget {
 class _DefaultTaxRateTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prefs = ref.read(sharedPreferencesProvider);
-    final taxRate = DefaultSettings.getTaxRate(prefs);
+    final taxRate = ref.watch(taxRateProvider);
+    // final taxRate = DefaultSettings.getTaxRate(prefs);
 
     return ListTile(
       leading: const Icon(Icons.percent_outlined),
@@ -144,6 +144,7 @@ class _DefaultTaxRateTile extends ConsumerWidget {
                 ref.read(sharedPreferencesProvider),
                 rate,
               );
+              ref.read(taxRateProvider.notifier).state = rate;
               Navigator.pop(context);
             },
             child: const Text('Save'),

@@ -42,18 +42,6 @@ class InvoicePDFService {
         ? await _businessProfileService.getBusinessProfile()
         : null;
 
-    // // Using a switch expression to handle both cases
-    // final businessName = switch (profileResult) {
-    //   Success(data: final profile) =>
-    //     profile.displayName, // Replace .name with your actual field
-    //   Error() => 'Invoicely', // Fallback to default on error
-    // };
-
-    // final logoPath = switch (profileResult) {
-    //   Success(data: final profile) => profile.logoPath,
-    //   Error() => null,
-    // };
-
     final profile = switch (profileResult) {
       Success<BusinessProfileModel>(:final data) => data,
       Error<BusinessProfileModel>() => null,
@@ -102,7 +90,8 @@ class InvoicePDFService {
 
     String formatDate(DateTime date) => DateFormat.yMMMd('en_US').format(date);
 
-    String formatCurrency(double amount) => formatAmount(amount, invoice.client?.currency);
+    String formatCurrency(double amount) =>
+        formatAmount(amount, invoice.client?.currency);
 
     // status color
     PdfColor statusColor() {
@@ -139,16 +128,16 @@ class InvoicePDFService {
                     height: 50,
                     width: 50,
                     child: pw.Image(logoImage),
-                  )
-                else
-                  pw.Text(
-                    profile?.displayName ?? 'N/A',
-                    style: pw.TextStyle(
-                      color: PdfColors.white,
-                      fontSize: 28,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
                   ),
+                buildText(
+                  profile?.businessName ?? 'N/A',
+                  style: pw.TextStyle(
+                    color: PdfColors.white,
+                    fontSize: 28,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                  isBold: true,
+                ),
                 pw.SizedBox(height: 4),
                 if (profile?.email != null)
                   pw.Text(
@@ -216,7 +205,7 @@ class InvoicePDFService {
                         ),
                       ),
                       child: pw.BarcodeWidget(
-                        data: invoice.invoiceNumber,
+                        data: invoice.remoteId!,
                         barcode: pw.Barcode.qrCode(),
                         color: primaryColor,
                         drawText: false,

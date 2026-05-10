@@ -4,6 +4,7 @@ import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/services/pdf_generator.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
+import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
@@ -569,7 +570,8 @@ class _BottomActions extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   // PDF generation — next feature
-                  final pdf = await InvoicePDFService().generateInvoicePDF(
+                  final businessProfileService = ref.read(businessProfileServiceProvider);
+                  final pdf = await InvoicePDFService(businessProfileService).generateInvoicePDF(
                     invoice,
                   );
 
@@ -610,7 +612,7 @@ class _BottomActions extends ConsumerWidget {
                                 child: ElevatedButton.icon(
                                   onPressed: () async {
                                     try {
-                                      final path = await InvoicePDFService()
+                                      final path = await InvoicePDFService(businessProfileService)
                                           .savePDF(
                                             pdf,
                                             '${invoice.client!.displayName} invoice - ${invoice.displayName}',

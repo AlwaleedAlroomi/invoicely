@@ -6,6 +6,7 @@ import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/theme/app_colors.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
+import 'package:invoicely/core/widgets/product_scanner_screen.dart';
 import 'package:invoicely/features/invoice/controller/invoice_controller.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
@@ -21,6 +22,48 @@ class InvoiceListScreen extends ConsumerStatefulWidget {
 
 class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
   final ScrollController _scrollController = ScrollController();
+
+  Future<void> _handleScannerResult() async {
+    final remoteId = await Navigator.of(context).push<String>(
+      FadeThroughRoute(
+        page: const ProductScannerScreen(
+          title: "Scan Invoice QR",
+          serviceName: 'Invoice number',
+        ),
+      ),
+    );
+    if (remoteId == null || !mounted) return;
+    await _searchAndNavigateToInvoice(remoteId);
+  }
+
+  Future<void> _searchAndNavigateToInvoice(String remoteId) async {
+    await ref
+        .read(invoiceControllerProvider.notifier)
+        .getInvoiceByRemoteId(remoteId);
+    if (!mounted) return;
+    final state = ref.read(invoiceControllerProvider);
+    if (state.selectedInvoice != null) {
+      Navigator.of(context).push(
+        FadeThroughRoute(
+          page: InvoiceViewScreen(initInvoice: state.selectedInvoice!),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Invoice Not Found'),
+          content: Text('No invoice found with ID: $remoteId'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -68,6 +111,14 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
           centerTitle: true,
           elevation: 0,
           actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton.filled(
+                tooltip: 'Scan QR',
+                onPressed: _handleScannerResult,
+                icon: const Icon(Icons.qr_code_scanner_rounded),
+              ),
+            ),
             IconButton(
               tooltip: "Refresh",
               onPressed: () =>
@@ -321,7 +372,10 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
                             ),
                           ),
                           Text(
-                            formatAmount(invoice.totalAmount, invoice.client?.currency),
+                            formatAmount(
+                              invoice.totalAmount,
+                              invoice.client?.currency,
+                            ),
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
