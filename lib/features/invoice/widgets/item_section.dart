@@ -13,47 +13,41 @@ class ItemsSection extends ConsumerWidget {
     final items = ref.watch(
       invoiceFormControllerProvider.select((s) => s.items),
     );
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            const Text(
-              'Items',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
             TextButton.icon(
               onPressed: () => _showProductPicker(context, ref),
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Item'),
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         if (items.isEmpty)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(vertical: 32),
             decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey.shade300,
-                style: BorderStyle.solid,
-              ),
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
             ),
             child: Column(
               children: [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  color: Colors.grey.shade400,
-                  size: 32,
-                ),
+                Icon(Icons.inventory_2_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.2), size: 36),
                 const SizedBox(height: 8),
                 Text(
                   'No items yet',
-                  style: TextStyle(color: Colors.grey.shade500),
+                  style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                 ),
               ],
             ),
@@ -73,7 +67,7 @@ class ItemsSection extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => DraggableScrollableSheet(
         expand: false,
@@ -96,11 +90,12 @@ class _ItemTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(invoiceFormControllerProvider.notifier);
     final productsAsync = ref.watch(allProductsProvider);
+    final theme = Theme.of(context);
+
     final product = productsAsync
         .whenData(
           (products) => products.firstWhere(
             (p) => p.isarId.toString() == item.productId,
-            // orElse: () => null,
           ),
         )
         .value;
@@ -108,96 +103,93 @@ class _ItemTile extends ConsumerWidget {
     final atMaxStock =
         product != null && item.quantity >= product.stockQuantity;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.productName,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.productName,
+                  style: TextStyle(fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '\$${item.unitPrice.toStringAsFixed(2)} × ${item.quantity}',
+                  style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12),
+                ),
+                if (product != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${product.stockQuantity} in stock',
+                        style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '\$${item.unitPrice.toStringAsFixed(2)} × ${item.quantity}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  SizedBox(width: 8),
-                  if (product != null)
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.inventory_2_outlined,
-                          size: 12,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${product.stockQuantity} in stock',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
                 ],
-              ),
+              ],
             ),
-            Text(
-              '\$${item.total.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '\$${item.total.toStringAsFixed(2)}',
+            style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: theme.dividerColor),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 8),
-            // quantity controls
-            Row(
+            child: Row(
               children: [
                 InkWell(
-                  onTap: () =>
-                      controller.updateItemQuantity(index, item.quantity - 1),
+                  onTap: () => controller.updateItemQuantity(index, item.quantity - 1),
                   borderRadius: BorderRadius.circular(4),
                   child: const Padding(
-                    padding: EdgeInsets.all(4),
+                    padding: EdgeInsets.all(6),
                     child: Icon(Icons.remove, size: 16),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text('${item.quantity}'),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('${item.quantity}', style: TextStyle(color: theme.colorScheme.onSurface)),
                 ),
                 InkWell(
                   onTap: atMaxStock
                       ? null
-                      : () => controller.updateItemQuantity(
-                          index,
-                          item.quantity + 1,
-                        ),
+                      : () => controller.updateItemQuantity(index, item.quantity + 1),
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(
-                      Icons.add,
-                      size: 16,
-                      color: atMaxStock ? Colors.transparent : null,
-                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.add, size: 16, color: atMaxStock ? Colors.transparent : null),
                   ),
                 ),
               ],
             ),
-            IconButton(
-              onPressed: () => controller.removeItem(index),
-              icon: const Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-                size: 20,
-              ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: () => controller.removeItem(index),
+            icon: const Icon(Icons.delete_outline, size: 20),
+            color: theme.colorScheme.error,
+            style: IconButton.styleFrom(
+              backgroundColor: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

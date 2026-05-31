@@ -115,238 +115,254 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(clientControllerProvider);
+    final theme = Theme.of(context);
     bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       appBar: AppBar(
-        actionsPadding: EdgeInsets.symmetric(horizontal: 8),
         title: Text(
           widget.initialClient == null ? 'Add Client' : 'Edit Client',
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        // name
-                        TextFormField(
-                          controller: _nameController,
-                          textInputAction: TextInputAction.next,
-                          canRequestFocus: true,
-                          decoration: InputDecoration(
-                            labelText: 'Name*',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? 'Name is required'
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        // email
-                        TextFormField(
-                          controller: _emailController,
-                          textInputAction: TextInputAction.next,
-                          canRequestFocus: true,
-                          decoration: InputDecoration(
-                            labelText: 'Email*',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? 'Email is required'
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        // phone
-                        TextFormField(
-                          controller: _phoneController,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: 'Phone Number',
-                            border: OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+              _SectionHeader(theme: theme, icon: Icons.person_outline, title: 'Basic Information'),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                ),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      textInputAction: TextInputAction.next,
+                      canRequestFocus: true,
+                      decoration: _inputDecoration(theme, label: 'Name*'),
+                      validator: (v) => (v == null || v.isEmpty)
+                          ? 'Name is required'
+                          : null,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        ValueListenableBuilder(
-                          valueListenable: _countryController,
-                          builder: (context, value, _) {
-                            return GestureDetector(
-                              onTap: _showCountryPicker,
-                              child: AbsorbPointer(
-                                child: TextFormField(
-                                  controller: _countryController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Country',
-                                    prefixIcon:
-                                        _countryController.text.isNotEmpty
-                                        ? Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: Text(
-                                              getFlagEmoji(
-                                                _countryController.text,
-                                              ),
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                          )
-                                        : Icon(Icons.flag_outlined),
-                                    suffixIcon: Icon(Icons.keyboard_arrow_down),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _emailController,
+                      textInputAction: TextInputAction.next,
+                      canRequestFocus: true,
+                      decoration: _inputDecoration(theme, label: 'Email*'),
+                      validator: (v) => (v == null || v.isEmpty)
+                          ? 'Email is required'
+                          : null,
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _phoneController,
+                      textInputAction: TextInputAction.next,
+                      decoration: _inputDecoration(theme, label: 'Phone Number'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _websiteController,
+                      textInputAction: TextInputAction.next,
+                      decoration: _inputDecoration(theme, label: 'Website'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              _SectionHeader(theme: theme, icon: Icons.location_on_outlined, title: 'Address'),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                ),
+                child: Column(
+                  children: [
+                    ValueListenableBuilder(
+                      valueListenable: _countryController,
+                      builder: (context, value, _) {
+                        return GestureDetector(
+                          onTap: _showCountryPicker,
+                          child: AbsorbPointer(
+                            child: TextFormField(
+                              controller: _countryController,
+                              decoration: InputDecoration(
+                                labelText: 'Country',
+                                prefixIcon: _countryController.text.isNotEmpty
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Text(
+                                          getFlagEmoji(_countryController.text),
+                                          style: const TextStyle(fontSize: 20),
+                                        ),
+                                      )
+                                    : Icon(Icons.flag_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                suffixIcon: Icon(Icons.keyboard_arrow_down, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                filled: true,
+                                fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                labelStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                               ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _stateController,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: 'State',
-                            border: OutlineInputBorder(),
+                              style: TextStyle(color: theme.colorScheme.onSurface),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _addres1Controller,
+                      textInputAction: TextInputAction.next,
+                      decoration: _inputDecoration(theme, label: 'Address Line 1'),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _addres2Controller,
+                      textInputAction: TextInputAction.next,
+                      decoration: _inputDecoration(theme, label: 'Address Line 2'),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _cityController,
+                            textInputAction: TextInputAction.next,
+                            decoration: _inputDecoration(theme, label: 'City'),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _cityController,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: 'City',
-                            border: OutlineInputBorder(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _stateController,
+                            textInputAction: TextInputAction.next,
+                            decoration: _inputDecoration(theme, label: 'State'),
                           ),
                         ),
-                        const SizedBox(height: 16),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _zipCodeController,
+                            textInputAction: TextInputAction.next,
+                            decoration: _inputDecoration(theme, label: 'ZIP Code'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _taxNumberController,
+                            textInputAction: TextInputAction.next,
+                            decoration: _inputDecoration(theme, label: 'Tax Number'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 20),
 
-              // website
-              TextFormField(
-                controller: _websiteController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Website',
-                  border: OutlineInputBorder(),
+              _SectionHeader(theme: theme, icon: Icons.settings_outlined, title: 'Additional'),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // addresline 1
-              TextFormField(
-                controller: _addres1Controller,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Address 1',
-                  border: OutlineInputBorder(),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _currencyController,
+                      textInputAction: TextInputAction.next,
+                      decoration: _inputDecoration(theme, label: 'Currency'),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _notesController,
+                      textInputAction: TextInputAction.next,
+                      decoration: _inputDecoration(theme, label: 'Notes'),
+                      maxLines: 2,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              // addresline 2
-              TextFormField(
-                controller: _addres2Controller,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Address 2',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // zipcode
-              TextFormField(
-                controller: _zipCodeController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'ZIP Code',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // tax number
-              TextFormField(
-                controller: _taxNumberController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Tax Number',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // currency
-              TextFormField(
-                controller: _currencyController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Currency',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // notes
-              TextFormField(
-                controller: _notesController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Notes',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
+      bottomNavigationBar: Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
-          top: 16,
-          bottom: isKeyboardOpen
-              ? MediaQuery.of(context).viewInsets.bottom + 8
-              : 16,
+          top: 12,
+          bottom: isKeyboardOpen ? MediaQuery.of(context).viewInsets.bottom + 8 : 16,
         ),
-        child: ElevatedButton(
-          onPressed: state.isLoading ? null : _saveClient,
-          child: state.isLoading
-              ? const CircularProgressIndicator()
-              : Text(
-                  widget.initialClient == null ? 'Save Client' : 'Edit Client',
-                  style: TextStyle(fontSize: 16),
-                ),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3))),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: state.isLoading ? null : _saveClient,
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: state.isLoading
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(
+                      widget.initialClient == null ? 'Save Client' : 'Edit Client',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(ThemeData theme, {required String label}) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      labelStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
 
   Future<void> _showCountryPicker() async {
     final searchController = TextEditingController();
     List<String> filtered = List.from(countries);
+    final theme = Theme.of(context);
 
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -362,20 +378,20 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                     Container(
                       width: 40,
                       height: 4,
-                      margin: EdgeInsets.symmetric(vertical: 12),
+                      margin: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: theme.dividerColor,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Select Country',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-
                     const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -385,13 +401,9 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                         decoration: InputDecoration(
                           hintText: 'Search country...',
                           prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                         onChanged: (query) {
                           setState(() {
@@ -406,10 +418,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                         },
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
-                    // list
                     Expanded(
                       child: ListView.builder(
                         controller: scrollController,
@@ -423,17 +432,14 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                               getFlagEmoji(country),
                               style: const TextStyle(fontSize: 24),
                             ),
-                            title: Text(
-                              country,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
+                            title: Text(country, style: theme.textTheme.bodyMedium),
                             trailing: isSelected
-                                ? const Icon(Icons.check, color: Colors.blue)
+                                ? Icon(Icons.check, color: theme.colorScheme.primary)
                                 : null,
                             selected: isSelected,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             onTap: () {
                               setState(() {
-                                _countryController.text = country;
                                 _countryController.text = country;
                               });
                               Navigator.pop(context);
@@ -449,6 +455,38 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           },
         );
       },
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final ThemeData theme;
+  final IconData icon;
+  final String title;
+  const _SectionHeader({required this.theme, required this.icon, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: theme.colorScheme.onPrimaryContainer),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 }

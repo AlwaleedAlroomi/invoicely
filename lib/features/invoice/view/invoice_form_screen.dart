@@ -29,10 +29,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final controller = ref.read(invoiceFormControllerProvider.notifier);
       if (widget.initialInvoice != null) {
-        // edit mode
         controller.loadInvoice(widget.initialInvoice!);
       } else {
-        // create mode — generate invoice number
         controller.reset();
         await controller.init();
         if (widget.preSelectedClient != null) {
@@ -79,6 +77,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(invoiceFormControllerProvider);
+    final theme = Theme.of(context);
     bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
@@ -86,77 +85,131 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
         title: Text(
           widget.initialInvoice != null ? 'Edit Invoice' : 'New Invoice',
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (state.error != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
+                  color: theme.colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  state.error!,
-                  style: TextStyle(color: Colors.red.shade700),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        state.error!,
+                        style: TextStyle(color: theme.colorScheme.onErrorContainer),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-            Text(
-              'Invoice #${state.invoiceNumber}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.description_outlined, color: theme.colorScheme.onPrimary, size: 28),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Invoice #${state.invoiceNumber}',
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.initialInvoice != null ? 'Edit existing invoice' : 'Create new invoice',
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-            // client picker
-            const Text('Client', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+            _SectionHeader(icon: Icons.person_outline, title: 'Client'),
+            const SizedBox(height: 10),
             ClientPickerSection(
               selectedClient: state.selectedClient,
               onTap: () => _showClientPicker(context, ref),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            // 2. dates
+            _SectionHeader(icon: Icons.calendar_today_outlined, title: 'Dates'),
+            const SizedBox(height: 10),
             const DatesSection(),
-            const SizedBox(height: 20),
-            // items list
+            const SizedBox(height: 24),
+
+            _SectionHeader(icon: Icons.shopping_cart_outlined, title: 'Items'),
+            const SizedBox(height: 10),
             const ItemsSection(),
-            const SizedBox(height: 20),
-            // totals summary
+            const SizedBox(height: 24),
+
+            _SectionHeader(icon: Icons.receipt_long_outlined, title: 'Summary'),
+            const SizedBox(height: 10),
             const TotalsSummarySection(),
-            const SizedBox(height: 20),
-            // notes / terms
-            const Text(
-              'Notes & Terms',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 24),
+
+            _SectionHeader(icon: Icons.notes_outlined, title: 'Notes & Terms'),
+            const SizedBox(height: 10),
             const NotesTermsSection(),
-            const SizedBox(height: 32),
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
+      bottomNavigationBar: Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
-          top: 16,
-          bottom: isKeyboardOpen
-              ? MediaQuery.of(context).viewInsets.bottom + 8
-              : 16,
+          top: 12,
+          bottom: isKeyboardOpen ? MediaQuery.of(context).viewInsets.bottom + 8 : 16,
         ),
-        child: ElevatedButton(
-          onPressed: state.isLoading ? null : _onSubmit,
-          child: state.isLoading
-              ? const CircularProgressIndicator()
-              : const Text('Save Invoice'),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3))),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: state.isLoading ? null : _onSubmit,
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: state.isLoading
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Save Invoice', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            ),
+          ),
         ),
       ),
     );
@@ -167,7 +220,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return DraggableScrollableSheet(
@@ -179,6 +232,38 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
           },
         );
       },
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  const _SectionHeader({required this.icon, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: theme.colorScheme.onPrimaryContainer),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 }

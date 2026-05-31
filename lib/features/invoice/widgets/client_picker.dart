@@ -18,62 +18,63 @@ class ClientPickerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
         ),
         child: selectedClient == null
             ? Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      Icons.person_add_outlined,
-                      color: Colors.blue.shade400,
-                    ),
+                    child: Icon(Icons.person_add_outlined, color: theme.colorScheme.onPrimaryContainer, size: 22),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
+                  const SizedBox(width: 14),
+                  Text(
                     'Select Client',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface),
                   ),
                   const Spacer(),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
+                  Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                 ],
               )
             : Row(
                 children: [
                   CircleAvatar(
-                    child: Text(selectedClient!.name[0].toUpperCase()),
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Text(
+                      selectedClient!.name[0].toUpperCase(),
+                      style: TextStyle(color: theme.colorScheme.onPrimaryContainer, fontWeight: FontWeight.w600),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           selectedClient!.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           selectedClient!.email,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
+                  Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                 ],
               ),
       ),
@@ -94,6 +95,7 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final clientsAsync = ref.watch(allClientsProvider);
 
     return Padding(
@@ -105,22 +107,22 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: theme.dividerColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const Text(
+          Text(
             'Select Client',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 12),
           TextField(
             decoration: InputDecoration(
               hintText: 'Search clients...',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              filled: true,
+              fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
             onChanged: (q) => setState(() => _query = q),
           ),
@@ -135,8 +137,8 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
                   );
                   ref.invalidate(allClientsProvider);
                 },
-                label: Text('Create Client'),
-                icon: Icon(Icons.add),
+                label: const Text('Create Client'),
+                icon: const Icon(Icons.add),
               ),
             ],
           ),
@@ -153,7 +155,9 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
                     .toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(child: Text('No clients found'));
+                  return Center(
+                    child: Text('No clients found', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                  );
                 }
 
                 return ListView.builder(
@@ -163,13 +167,15 @@ class ClientPickerSheetState extends ConsumerState<ClientPickerSheet> {
                     final client = filtered[index];
                     return ListTile(
                       leading: CircleAvatar(
-                        child: Text(client.name[0].toUpperCase()),
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        child: Text(
+                          client.name[0].toUpperCase(),
+                          style: TextStyle(color: theme.colorScheme.onPrimaryContainer),
+                        ),
                       ),
-                      title: Text(
-                        client.name,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      title: Text(client.name, style: theme.textTheme.titleMedium),
                       subtitle: Text(client.email),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       onTap: () {
                         ref
                             .read(invoiceFormControllerProvider.notifier)

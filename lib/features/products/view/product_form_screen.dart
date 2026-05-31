@@ -215,84 +215,98 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(productControllerProvider);
+    final theme = Theme.of(context);
     bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       appBar: AppBar(
-        actionsPadding: EdgeInsets.symmetric(horizontal: 8),
         title: Text(
           widget.initialProduct == null ? 'Add Product' : 'Edit Product',
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildImagePicker(),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          textInputAction: TextInputAction.next,
-                          canRequestFocus: true,
-                          decoration: InputDecoration(
-                            labelText: 'Product Name*',
-                            border: OutlineInputBorder(),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildImagePicker(),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _nameController,
+                            textInputAction: TextInputAction.next,
+                            canRequestFocus: true,
+                            decoration: _inputDecoration(theme, label: 'Product Name*'),
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Name is required'
+                                : null,
                           ),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? 'Name is required'
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _priceController,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: 'Unit Price*',
-                            border: OutlineInputBorder(),
-                            prefixText: '\$',
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _priceController,
+                            textInputAction: TextInputAction.next,
+                            decoration: _inputDecoration(theme, label: 'Unit Price*', prefix: '\$'),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => (double.tryParse(v ?? '') == null)
+                                ? 'Enter a valid price'
+                                : null,
                           ),
-                          keyboardType: TextInputType.number,
-                          validator: (v) => (double.tryParse(v ?? '') == null)
-                              ? 'Enter a valid price'
-                              : null,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _skuController,
-                readOnly: true,
-                canRequestFocus: false,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock_outline, size: 20),
-                  labelText: 'SKU (Barcode)',
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  border: OutlineInputBorder(),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _descController,
-                textInputAction: TextInputAction.next,
-                onEditingComplete: () {
-                  _stockFocusNode.requestFocus();
-                },
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
                 ),
-                maxLines: 2,
+                child: TextFormField(
+                  controller: _skuController,
+                  readOnly: true,
+                  canRequestFocus: false,
+                  decoration: _inputDecoration(theme, label: 'SKU (Barcode)', icon: Icons.lock_outline),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                ),
+                child: TextFormField(
+                  controller: _descController,
+                  textInputAction: TextInputAction.next,
+                  onEditingComplete: () {
+                    _stockFocusNode.requestFocus();
+                  },
+                  decoration: _inputDecoration(theme, label: 'Description'),
+                  maxLines: 2,
+                ),
               ),
               const SizedBox(height: 16),
               _buildStockQuantityInput(),
@@ -301,33 +315,56 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
+      bottomNavigationBar: Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
-          top: 16,
-          bottom: isKeyboardOpen
-              ? MediaQuery.of(context).viewInsets.bottom + 8
-              : 16,
+          top: 12,
+          bottom: isKeyboardOpen ? MediaQuery.of(context).viewInsets.bottom + 8 : 16,
         ),
-        child: ElevatedButton(
-          onPressed: state.isLoading ? null : _saveProduct,
-          child: state.isLoading
-              ? const CircularProgressIndicator()
-              : Text(
-                  widget.initialProduct == null
-                      ? 'Save Product'
-                      : 'Edit Product',
-                  style: TextStyle(fontSize: 16),
-                ),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3))),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: state.isLoading ? null : _saveProduct,
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: state.isLoading
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(
+                      widget.initialProduct == null ? 'Save Product' : 'Edit Product',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(ThemeData theme, {required String label, String? prefix, IconData? icon}) {
+    return InputDecoration(
+      labelText: label,
+      prefixText: prefix,
+      prefixIcon: icon != null ? Icon(icon, size: 18) : null,
+      filled: true,
+      fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      labelStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
 
   Widget _buildImagePicker() {
     final hasImage = _pickedImage != null || _fullDisplayPath != null;
     final imagePath = _pickedImage?.path ?? _fullDisplayPath;
+    final theme = Theme.of(context);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -338,10 +375,11 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             width: 100,
             height: 110,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: hasImage ? AppColors.secondary : Colors.grey.shade400,
+                color: hasImage ? theme.colorScheme.primary : theme.dividerColor,
+                width: hasImage ? 1.5 : 1,
               ),
               image: hasImage && imagePath != null
                   ? DecorationImage(
@@ -351,14 +389,14 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                   : null,
             ),
             child: !hasImage
-                ? const Column(
+                ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_a_photo, size: 32, color: Colors.grey),
-                      SizedBox(height: 4),
+                      Icon(Icons.add_a_photo, size: 28, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+                      const SizedBox(height: 4),
                       Text(
                         'Image',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12),
                       ),
                     ],
                   )
@@ -378,16 +416,12 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 });
               },
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.error,
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.close,
-                  color: AppColors.lightSurface,
-                  size: 14,
-                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 14),
               ),
             ),
           ),
@@ -396,62 +430,78 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   }
 
   Widget _buildStockQuantityInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Stock Quantity"),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8),
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Stock Quantity',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.remove_circle_outline, color: AppColors.error),
-                onPressed: _decrementStock, // ✅ SIMPLIFIED
-              ),
-              Expanded(
-                child: TextFormField(
-                  controller: _stockQuantityController,
-                  focusNode: _stockFocusNode,
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '0',
-                  ),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: _updateStock,
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove_circle_outline, color: theme.colorScheme.error),
+                  onPressed: _decrementStock,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: Colors.green),
-                onPressed: _incrementStock, // ✅ SIMPLIFIED
-              ),
-            ],
+                Expanded(
+                  child: TextFormField(
+                    controller: _stockQuantityController,
+                    focusNode: _stockFocusNode,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '0',
+                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: _updateStock,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+                  onPressed: _incrementStock,
+                ),
+              ],
+            ),
           ),
-        ),
-        Slider(
-          activeColor: AppColors.primary,
-          inactiveColor: AppColors.lightBackground,
-          overlayColor: WidgetStatePropertyAll(
-            AppColors.secondary.withAlpha(50),
+          Slider(
+            activeColor: theme.colorScheme.primary,
+            inactiveColor: theme.colorScheme.surfaceVariant,
+            overlayColor: WidgetStatePropertyAll(theme.colorScheme.primary.withValues(alpha: 0.1)),
+            divisions: maxSliderValue,
+            value: _sliderValue,
+            min: 0,
+            max: maxSliderValue.toDouble(),
+            label: _sliderValue.toInt().toString(),
+            onChanged: (double newValue) {
+              setState(() {
+                _sliderValue = newValue;
+                _stockQuantityController.text = newValue.toInt().toString();
+              });
+            },
           ),
-          divisions: maxSliderValue,
-          value: _sliderValue,
-          min: 0,
-          max: maxSliderValue.toDouble(),
-          label: _sliderValue.toInt().toString(),
-          onChanged: (double newValue) {
-            setState(() {
-              _sliderValue = newValue;
-              _stockQuantityController.text = newValue.toInt().toString();
-            });
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

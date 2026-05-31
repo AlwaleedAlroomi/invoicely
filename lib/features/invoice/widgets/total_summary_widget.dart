@@ -9,23 +9,23 @@ class TotalsSummarySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(invoiceFormControllerProvider);
+    final theme = Theme.of(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
-          // tax rate input
           Row(
             children: [
-              const Text('Tax Rate (%)', style: TextStyle(color: Colors.grey)),
+              Text('Tax Rate (%)', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
               const Spacer(),
               SizedBox(
-                width: 80,
+                width: 90,
                 child: TextFormField(
                   initialValue: state.taxRate.toStringAsFixed(0),
                   keyboardType: TextInputType.number,
@@ -34,10 +34,12 @@ class TotalsSummarySection extends ConsumerWidget {
                     hintText: '0',
                     suffixText: '%',
                     isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                   onChanged: (v) {
                     final rate = double.tryParse(v) ?? 0;
                     ref
@@ -48,22 +50,31 @@ class TotalsSummarySection extends ConsumerWidget {
               ),
             ],
           ),
-          const Divider(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1),
+          ),
           _SummaryRow(
             label: 'Subtotal',
             value: formatAmount(state.subTotal, state.currency),
+            theme: theme,
           ),
           const SizedBox(height: 6),
           _SummaryRow(
             label: 'Tax (${state.taxRate.toStringAsFixed(0)}%)',
             value: formatAmount(state.taxAmount, state.currency),
+            theme: theme,
           ),
-          const Divider(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1),
+          ),
           _SummaryRow(
             label: 'Total',
             value: formatAmount(state.totalAmount, state.currency),
             isBold: true,
             fontSize: 16,
+            theme: theme,
           ),
         ],
       ),
@@ -76,10 +87,12 @@ class _SummaryRow extends StatelessWidget {
   final String value;
   final bool isBold;
   final double fontSize;
+  final ThemeData theme;
 
   const _SummaryRow({
     required this.label,
     required this.value,
+    required this.theme,
     this.isBold = false,
     this.fontSize = 14,
   });
@@ -89,6 +102,7 @@ class _SummaryRow extends StatelessWidget {
     final style = TextStyle(
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
       fontSize: fontSize,
+      color: isBold ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.7),
     );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
