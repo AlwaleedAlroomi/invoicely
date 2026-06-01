@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoicely/core/services/notification_service.dart';
 import 'package:invoicely/core/theme/app_theme.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().init();
   final sharedPrefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(
