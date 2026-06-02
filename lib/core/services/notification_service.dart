@@ -26,7 +26,7 @@ class NotificationService {
         id: 0,
         title: title,
         body: body,
-        notificationDetails: _buildNotificationDetails(
+        notificationDetails: buildNotificationDetails(
           channelId: 'reminder_channel',
           channelName: 'reminder channel',
           channelDescription: 'Channedl for invoice due date reminders',
@@ -35,7 +35,7 @@ class NotificationService {
     } catch (e) {}
   }
 
-  NotificationDetails _buildNotificationDetails({
+  NotificationDetails buildNotificationDetails({
     required String channelId,
     required String channelName,
     String? channelDescription,

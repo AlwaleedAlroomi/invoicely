@@ -11,7 +11,8 @@ import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
 
 part 'database.g.dart';
 
-class InvoiceItemConverter extends TypeConverter<List<InvoiceItemModel>, String> {
+class InvoiceItemConverter
+    extends TypeConverter<List<InvoiceItemModel>, String> {
   const InvoiceItemConverter();
 
   @override
@@ -50,8 +51,7 @@ class Invoices extends Table {
   RealColumn get totalAmount => real()();
   TextColumn get status =>
       text().map(const InvoiceStatusConverter()).nullable()();
-  TextColumn get items =>
-      text().map(const InvoiceItemConverter()).nullable()();
+  TextColumn get items => text().map(const InvoiceItemConverter()).nullable()();
   TextColumn? get notes => text().nullable()();
   TextColumn? get terms => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
@@ -110,11 +110,12 @@ class BusinessProfiles extends Table {
   TextColumn? get country => text().nullable()();
 }
 
-@DriftDatabase(
-  tables: [Invoices, Clients, Products, BusinessProfiles],
-)
+@DriftDatabase(tables: [Invoices, Clients, Products, BusinessProfiles])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+
+  // ignore: use_super_parameters
+  AppDatabase.connect(DatabaseConnection connection) : super(connection);
 
   @override
   int get schemaVersion => 1;
