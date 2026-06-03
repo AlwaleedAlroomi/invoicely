@@ -12,17 +12,38 @@ import 'package:workmanager/workmanager.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService().init();
-  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  await Workmanager().registerPeriodicTask(
-    "invoicely_daily_check_id",
-    dailyInvoiceTask,
-    frequency: const Duration(hours: 24),
-    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
-    constraints: Constraints(
-      networkType: NetworkType.notRequired,
-      requiresBatteryNotLow: true,
-    ),
-  );
+  await Workmanager().initialize(callbackDispatcher);
+
+  final now = DateTime.now();
+  var firstTarget = DateTime(now.year, now.month, now.day, 9, 0, 0);
+
+  if (now.isAfter(firstTarget)) {
+    firstTarget = firstTarget.add(const Duration(days: 1));
+    await Workmanager().registerOneOffTask(
+      dailyInvoiceTask,
+      dailyInvoiceTask,
+      initialDelay: firstTarget.difference(now),
+      existingWorkPolicy: ExistingWorkPolicy.append,
+    );
+    await Workmanager().registerOneOffTask(
+      'immediate_first_run_check',
+      dailyInvoiceTask,
+      initialDelay: Duration.zero,
+      existingWorkPolicy: ExistingWorkPolicy.append,
+      constraints: Constraints(
+        networkType: NetworkType.notRequired,
+        requiresBatteryNotLow: true,
+      ),
+    );
+  } else {
+    await Workmanager().registerOneOffTask(
+      dailyInvoiceTask,
+      dailyInvoiceTask,
+      initialDelay: firstTarget.difference(now),
+      existingWorkPolicy: ExistingWorkPolicy.keep,
+    );
+  }
+
   final sharedPrefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(
