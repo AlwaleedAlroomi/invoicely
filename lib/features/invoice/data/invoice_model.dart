@@ -3,6 +3,7 @@ import 'package:invoicely/core/models/sortable_entity.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/data/invoice_item_model.dart';
 import 'package:uuid/uuid.dart';
+import 'package:invoicely/data/database/database.dart' as db;
 
 const uuid = Uuid();
 
@@ -88,4 +89,26 @@ class InvoiceModel implements SortableEntity {
 
   @override
   String get displayName => invoiceNumber;
+
+  factory InvoiceModel.fromDb(db.Invoice driftInvoice) {
+    return InvoiceModel(
+      isarId: driftInvoice.id,
+      remoteId: driftInvoice.remoteId,
+      invoiceNumber: driftInvoice.invoiceNumber,
+      issueDate: driftInvoice.issueDate,
+      dueDate: driftInvoice.dueDate,
+      taxRate: driftInvoice.taxRate,
+      subTotal: driftInvoice.subTotal,
+      taxAmount: driftInvoice.taxAmount,
+      totalAmount: driftInvoice.totalAmount,
+      status: driftInvoice.status ?? InvoiceStatus.draft,
+      items: driftInvoice.items ?? [],
+      notes: driftInvoice.notes,
+      terms: driftInvoice.terms,
+      isActive: driftInvoice.isActive,
+      createdAt: driftInvoice.createdAt,
+      updatedAt: driftInvoice.updatedAt,
+      client: null,
+    );
+  }
 }

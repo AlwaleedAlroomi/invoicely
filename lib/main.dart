@@ -23,13 +23,13 @@ void main() async {
       dailyInvoiceTask,
       dailyInvoiceTask,
       initialDelay: firstTarget.difference(now),
-      existingWorkPolicy: ExistingWorkPolicy.append,
+      existingWorkPolicy: ExistingWorkPolicy.keep,
     );
     await Workmanager().registerOneOffTask(
       'immediate_first_run_check',
       dailyInvoiceTask,
       initialDelay: Duration.zero,
-      existingWorkPolicy: ExistingWorkPolicy.append,
+      existingWorkPolicy: ExistingWorkPolicy.replace,
       constraints: Constraints(
         networkType: NetworkType.notRequired,
         requiresBatteryNotLow: true,
@@ -68,6 +68,7 @@ class MyApp extends ConsumerWidget {
       themeMode: themeMode,
       home: const MainShell(),
       debugShowCheckedModeBanner: false,
+      navigatorKey: NotificationService().navigatorKey,
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,15 +10,18 @@ import 'package:workmanager/workmanager.dart';
 import 'package:path/path.dart' as p;
 
 const String dailyInvoiceTask = "com.invoicely.dailyInvoiceCheck";
+const String immediateFirstRuncInvoiceTask = 'immediate_first_run_check';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
-    if (taskName == dailyInvoiceTask) {
+    if (taskName == dailyInvoiceTask ||
+        taskName == immediateFirstRuncInvoiceTask) {
       AppDatabase? db;
       try {
         final notificationPlugin = FlutterLocalNotificationsPlugin();
         final notificationService = NotificationService();
+        await notificationService.init();
 
         final dbFolder = await getApplicationDocumentsDirectory();
         final dbFile = File(p.join(dbFolder.path, 'invoicely.db'));
@@ -61,15 +63,18 @@ void callbackDispatcher() {
               importance: Importance.max,
               priority: Priority.high,
             ),
+            payload: invoice.id.toString(),
           );
         }
 
         await rescheduleNextDailyCheck();
       } catch (e) {
+        await rescheduleNextDailyCheck();
+        return false;
+      } finally {
         if (db != null) {
           await db.close();
         }
-        return false;
       }
     }
     return true;
@@ -89,10 +94,10 @@ Future<void> rescheduleNextDailyCheck() async {
 
   final delay = targetTime.difference(now);
 
-  await Workmanager().registerPeriodicTask(
+  await Workmanager().registerOneOffTask(
     dailyInvoiceTask,
     dailyInvoiceTask,
     initialDelay: delay,
-    existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+    existingWorkPolicy: ExistingWorkPolicy.replace,
   );
 }

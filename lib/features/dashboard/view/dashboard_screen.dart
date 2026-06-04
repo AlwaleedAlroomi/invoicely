@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
-import 'package:invoicely/core/services/notification_service.dart';
 import 'package:invoicely/core/services/permission_helper.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
@@ -43,14 +42,18 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
     final granted = await PermissionHelper().requestNotificationPermissions();
 
     if (!granted && mounted) {
-      SnackBar(
-        content: Text('Please allow notifications to use this app.'),
-        backgroundColor: Colors.orange,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please allow notifications to use this app.'),
+          backgroundColor: Colors.orange,
+        ),
       );
     } else if (granted && mounted) {
-      SnackBar(
-        content: Text('Notifications enabled!'),
-        backgroundColor: Colors.green,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Notifications enabled!'),
+          backgroundColor: Colors.green,
+        ),
       );
     }
   }
@@ -71,17 +74,17 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              NotificationService().showBasicNotification(
-                title: 'test basic',
-                body: 'test body basic notificaiton',
-              );
-            },
-            icon: Icon(Icons.add),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       NotificationService().showBasicNotification(
+        //         title: 'test basic',
+        //         body: 'test body basic notificaiton',
+        //       );
+        //     },
+        //     icon: Icon(Icons.add),
+        //   ),
+        // ],
       ),
       body: RefreshIndicator(
         onRefresh: () => _refresh(ref),
