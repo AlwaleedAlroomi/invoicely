@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/services/background_worker.dart';
@@ -11,37 +13,39 @@ import 'package:workmanager/workmanager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init();
-  await Workmanager().initialize(callbackDispatcher);
+  if (Platform.isAndroid) {
+    await NotificationService().init();
+    await Workmanager().initialize(callbackDispatcher);
 
-  final now = DateTime.now();
-  var firstTarget = DateTime(now.year, now.month, now.day, 9, 0, 0);
+    final now = DateTime.now();
+    var firstTarget = DateTime(now.year, now.month, now.day, 9, 0, 0);
 
-  if (now.isAfter(firstTarget)) {
-    firstTarget = firstTarget.add(const Duration(days: 1));
-    await Workmanager().registerOneOffTask(
-      dailyInvoiceTask,
-      dailyInvoiceTask,
-      initialDelay: firstTarget.difference(now),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
-    );
-    await Workmanager().registerOneOffTask(
-      'immediate_first_run_check',
-      dailyInvoiceTask,
-      initialDelay: Duration.zero,
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-      constraints: Constraints(
-        networkType: NetworkType.notRequired,
-        requiresBatteryNotLow: true,
-      ),
-    );
-  } else {
-    await Workmanager().registerOneOffTask(
-      dailyInvoiceTask,
-      dailyInvoiceTask,
-      initialDelay: firstTarget.difference(now),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
-    );
+    if (now.isAfter(firstTarget)) {
+      firstTarget = firstTarget.add(const Duration(days: 1));
+      await Workmanager().registerOneOffTask(
+        dailyInvoiceTask,
+        dailyInvoiceTask,
+        initialDelay: firstTarget.difference(now),
+        existingWorkPolicy: ExistingWorkPolicy.keep,
+      );
+      await Workmanager().registerOneOffTask(
+        'immediate_first_run_check',
+        dailyInvoiceTask,
+        initialDelay: Duration.zero,
+        existingWorkPolicy: ExistingWorkPolicy.replace,
+        constraints: Constraints(
+          networkType: NetworkType.notRequired,
+          requiresBatteryNotLow: true,
+        ),
+      );
+    } else {
+      await Workmanager().registerOneOffTask(
+        dailyInvoiceTask,
+        dailyInvoiceTask,
+        initialDelay: firstTarget.difference(now),
+        existingWorkPolicy: ExistingWorkPolicy.keep,
+      );
+    }
   }
 
   final sharedPrefs = await SharedPreferences.getInstance();

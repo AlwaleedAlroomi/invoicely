@@ -4,6 +4,8 @@ import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/services/pdf_generator.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
+import 'package:invoicely/features/products/providers/product_providers.dart';
+import 'package:invoicely/features/settings/data/default_settings.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
@@ -571,8 +573,11 @@ class _BottomActions extends ConsumerWidget {
                 onPressed: () async {
                   // PDF generation — next feature
                   final businessProfileService = ref.read(businessProfileServiceProvider);
+                  final prefs = ref.read(sharedPreferencesProvider);
+                  final policy = DefaultSettings.getPolicy(prefs);
                   final pdf = await InvoicePDFService(businessProfileService).generateInvoicePDF(
                     invoice,
+                    policy: policy,
                   );
 
                   if (!context.mounted) return;

@@ -11,6 +11,7 @@ import 'package:invoicely/features/settings/view/business_profile_screen.dart';
 import 'package:invoicely/features/settings/view/export_to_csv_screen.dart';
 import 'package:invoicely/features/settings/view/export_to_xlsx_screen.dart';
 import 'package:invoicely/features/settings/view/import_screen.dart';
+import 'package:invoicely/features/settings/view/invoice_policy_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -31,7 +32,7 @@ class SettingsScreen extends ConsumerWidget {
           _BusinessProfileTile(),
           _SectionHeader(title: 'Preferences'),
           _DefaultTaxRateTile(),
-          // _DefaultCurrencyTile(),
+          _InvoicePolicyTile(),
           _SectionHeader(title: 'Appearance'),
           _ThemeModeTile(),
           _PrimaryColorTile(),
@@ -150,6 +151,31 @@ class _DefaultTaxRateTile extends ConsumerWidget {
             child: const Text('Save'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── INVOICE POLICY ────────────────────────────
+class _InvoicePolicyTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final policy = ref.watch(invoicePolicyProvider);
+
+    return ListTile(
+      leading: const Icon(Icons.description_outlined),
+      title: Text(
+        'Invoice Policy',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(
+        policy.length > 40 ? '${policy.substring(0, 40)}...' : policy,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => Navigator.of(context).push(
+        FadeThroughRoute(page: const InvoicePolicyScreen()),
       ),
     );
   }

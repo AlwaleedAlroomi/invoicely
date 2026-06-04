@@ -73,3 +73,8 @@ final taxRateProvider = StateProvider<double>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return DefaultSettings.getTaxRate(prefs);
 });
+
+final invoicePolicyProvider = StateProvider<String>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return DefaultSettings.getPolicy(prefs);
+});
