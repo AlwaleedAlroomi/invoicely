@@ -174,9 +174,9 @@ class _InvoicePolicyTile extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () => Navigator.of(context).push(
-        FadeThroughRoute(page: const InvoicePolicyScreen()),
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).push(FadeThroughRoute(page: const InvoicePolicyScreen())),
     );
   }
 }
@@ -274,40 +274,46 @@ class _ThemeModeTile extends ConsumerWidget {
             : Icons.light_mode_outlined,
       ),
       title: Text('Appearance', style: Theme.of(context).textTheme.titleMedium),
-      trailing: SegmentedButton<ThemeMode>(
-        segments: [
-          ButtonSegment(
-            value: ThemeMode.light,
-            icon: Icon(
-              Icons.light_mode_outlined,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            label: Text("Light"),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 12.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<ThemeMode>(
+            segments: [
+              ButtonSegment(
+                value: ThemeMode.light,
+                icon: Icon(
+                  Icons.light_mode_outlined,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                label: Text("Light"),
+              ),
+              ButtonSegment(
+                value: ThemeMode.system,
+                icon: Icon(
+                  Icons.contrast_outlined,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                label: Text("System"),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                icon: Icon(
+                  Icons.dark_mode_outlined,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                label: Text("Dark"),
+              ),
+            ],
+            selected: {themeMode},
+            onSelectionChanged: (value) {
+              ref.read(themeControllerProvider.notifier).setTheme(value.first);
+            },
           ),
-          ButtonSegment(
-            value: ThemeMode.system,
-            icon: Icon(
-              Icons.contrast_outlined,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            label: Text("System"),
-          ),
-          ButtonSegment(
-            value: ThemeMode.dark,
-            icon: Icon(
-              Icons.dark_mode_outlined,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            label: Text("Dark"),
-          ),
-        ],
-        selected: {themeMode},
-        onSelectionChanged: (value) {
-          ref.read(themeControllerProvider.notifier).setTheme(value.first);
-        },
+        ),
       ),
     );
   }
@@ -338,7 +344,7 @@ class _PrimaryColorTile extends ConsumerWidget {
         child: Wrap(
           spacing: 8,
           children: colors.map((color) {
-            final isSelected = currentColor.value == color.value;
+            final isSelected = currentColor.toARGB32() == color.toARGB32();
             return GestureDetector(
               onTap: () =>
                   ref.read(colorControllerProvider.notifier).setColor(color),

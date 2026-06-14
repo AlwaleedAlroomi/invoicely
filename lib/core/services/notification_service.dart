@@ -1,23 +1,26 @@
-import 'dart:io';
-
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' hide Priority;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/data/database/database.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/view/invoice_view_screen.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 
 class NotificationService {
+  static final NotificationService instance = NotificationService._internal();
+  factory NotificationService() => instance;
+  NotificationService._internal();
+
   static final FlutterLocalNotificationsPlugin _notification =
       FlutterLocalNotificationsPlugin();
+  AppDatabase? _db;
+
+  String? _pendingPaylod;
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  Future init() async {
+  Future init(AppDatabase db) async {
+    _db = db;
     final androidSettings = AndroidInitializationSettings(
       "@mipmap/ic_launcher",
     );
@@ -27,7 +30,7 @@ class NotificationService {
     await _notification.initialize(
       settings: initSettings,
       onDidReceiveNotificationResponse: (response) {
-        final String? payload = response.payload;
+        final payload = response.payload;
         if (payload != null && payload.isNotEmpty) {
           _navigateToInvoice(payload);
         }
@@ -39,26 +42,34 @@ class NotificationService {
     if (appLaunchDetails != null && appLaunchDetails.didNotificationLaunchApp) {
       final String? payload = appLaunchDetails.notificationResponse?.payload;
       if (payload != null && payload.isNotEmpty) {
-        _navigateToInvoice(payload);
+        // await Future.delayed(const Duration(milliseconds: 500));
+        // _navigateToInvoice(payload);
+        _pendingPaylod = payload;
       }
     }
   }
 
+  void drainPendingPayload() {
+    if (_pendingPaylod == null) return;
+
+    final payload = _pendingPaylod;
+    _pendingPaylod = null;
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _navigateToInvoice(payload!);
+    });
+  }
+
   void _navigateToInvoice(String invoiceId) async {
+    final db = _db;
+    if (db == null) return;
     final intId = int.tryParse(invoiceId);
-
     if (intId == null) return;
-
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final dbFile = File(p.join(dbFolder.path, 'invoicely.db'));
-    final backgroundExecutor = NativeDatabase(dbFile);
-    final db = AppDatabase.connect(DatabaseConnection(backgroundExecutor));
 
     final Invoice? driftInvoice = await (db.select(
       db.invoices,
     )..where((tbl) => tbl.id.equals(intId))).getSingleOrNull();
 
-    await db.close();
     if (driftInvoice != null) {
       final InvoiceModel initInvoice = InvoiceModel.fromDb(driftInvoice);
       navigatorKey.currentState?.push(
@@ -85,7 +96,7 @@ class NotificationService {
     } catch (e) {}
   }
 
-  NotificationDetails buildNotificationDetails({
+  static NotificationDetails buildNotificationDetails({
     required String channelId,
     required String channelName,
     String? channelDescription,
