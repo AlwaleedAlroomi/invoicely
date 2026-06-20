@@ -10,16 +10,21 @@ import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/routing/main_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 const String _firstRunDoneKey = 'immediate_invoice_check_done';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation('Asia/Riyadh'));
   final db = AppDatabase();
   final sharedPrefs = await SharedPreferences.getInstance();
 
   if (Platform.isAndroid) {
     await NotificationService.instance.init(db);
+    await NotificationService.instance.scheduleDaily9AMReminder();
     await Workmanager().initialize(callbackDispatcher);
 
     final now = DateTime.now();
@@ -32,7 +37,7 @@ void main() async {
       dailyInvoiceTask,
       dailyInvoiceTask,
       initialDelay: firstTarget.difference(now),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      existingWorkPolicy: ExistingWorkPolicy.replace,
       constraints: Constraints(
         networkType: NetworkType.notRequired,
         requiresBatteryNotLow: false,

@@ -69,6 +69,11 @@ void callbackDispatcher() {
         }
 
         final notificationPlugin = FlutterLocalNotificationsPlugin();
+        await notificationPlugin.initialize(
+          settings: InitializationSettings(
+            android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          ),
+        );
 
         for (var invoice in dueInvoices) {
           await notificationPlugin.show(
@@ -103,14 +108,10 @@ void callbackDispatcher() {
 
 Future<void> rescheduleNextDailyCheck() async {
   final now = DateTime.now();
-  var targetTime = DateTime(
-    now.year,
-    now.month,
-    now.day,
-    9,
-    0,
-    0,
-  ).add(Duration(days: 1));
+  var targetTime = DateTime(now.year, now.month, now.day, 9, 0, 0);
+  if (now.isAfter(targetTime)) {
+    targetTime = targetTime.add(const Duration(days: 1));
+  }
 
   final delay = targetTime.difference(now);
 
@@ -119,5 +120,9 @@ Future<void> rescheduleNextDailyCheck() async {
     dailyInvoiceTask,
     initialDelay: delay,
     existingWorkPolicy: ExistingWorkPolicy.replace,
+    constraints: Constraints(
+      networkType: NetworkType.notRequired,
+      requiresBatteryNotLow: false,
+    ),
   );
 }

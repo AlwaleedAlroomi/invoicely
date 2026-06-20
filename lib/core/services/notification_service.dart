@@ -5,6 +5,7 @@ import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/data/database/database.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/view/invoice_view_screen.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final NotificationService instance = NotificationService._internal();
@@ -78,24 +79,6 @@ class NotificationService {
     }
   }
 
-  Future showBasicNotification({
-    required String title,
-    required String body,
-  }) async {
-    try {
-      await _notification.show(
-        id: 0,
-        title: title,
-        body: body,
-        notificationDetails: buildNotificationDetails(
-          channelId: 'reminder_channel',
-          channelName: 'reminder channel',
-          channelDescription: 'Channel for invoice due date reminders',
-        ),
-      );
-    } catch (e) {}
-  }
-
   static NotificationDetails buildNotificationDetails({
     required String channelId,
     required String channelName,
@@ -116,5 +99,53 @@ class NotificationService {
     );
 
     return NotificationDetails(android: androidDetails);
+  }
+
+  Future<void> scheduleDaily9AMReminder() async {
+    const channelId = 'daily_invoice_reminders';
+    const channelName = 'Daily Due Reminders';
+
+    await _notification
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            channelId,
+            channelName,
+            description: 'Daily invoice due reminders at 9 AM',
+            importance: Importance.max,
+          ),
+        );
+
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      9,
+      0,
+      0,
+    );
+    if (now.isAfter(scheduledDate)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    await _notification.cancel(id: 999);
+
+    await _notification.zonedSchedule(
+      id: 999,
+      scheduledDate: scheduledDate,
+      title: 'Invoices Due Today ⚠️',
+      body: 'Check invoices due for payment today.',
+      notificationDetails: buildNotificationDetails(
+        channelId: channelId,
+        channelName: channelName,
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: 'daily_reminder',
+    );
   }
 }
