@@ -118,9 +118,11 @@ class InvoiceHistoryTile extends ConsumerWidget {
       case InvoiceStatus.draft:
         return Colors.grey;
       case InvoiceStatus.cancelled:
-        return Colors.orange;
+        return Colors.blueGrey;
       case InvoiceStatus.sent:
         return Colors.blue;
+      case InvoiceStatus.today:
+        return Colors.amber;
     }
   }
 

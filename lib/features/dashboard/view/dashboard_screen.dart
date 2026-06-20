@@ -257,9 +257,11 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
       case InvoiceStatus.draft:
         statusColor = Colors.grey;
       case InvoiceStatus.cancelled:
-        statusColor = Colors.orange;
+        statusColor = Colors.blueGrey;
       case InvoiceStatus.sent:
         statusColor = Colors.blue;
+      case InvoiceStatus.today:
+        statusColor = Colors.amber;
     }
     final client = invoice.client;
     return Card(

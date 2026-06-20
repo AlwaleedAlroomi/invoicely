@@ -278,17 +278,16 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
     switch (invoice.status) {
       case InvoiceStatus.paid:
         statusColor = Colors.green;
-        break;
       case InvoiceStatus.overdue:
         statusColor = Colors.red;
-        break;
       case InvoiceStatus.draft:
         statusColor = Colors.grey;
-        break;
       case InvoiceStatus.cancelled:
-        statusColor = Colors.orange;
+        statusColor = Colors.blueGrey;
       case InvoiceStatus.sent:
         statusColor = Colors.blue;
+      case InvoiceStatus.today:
+        statusColor = Colors.amber;
     }
 
     return Card(
@@ -405,9 +404,11 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
         case InvoiceStatus.draft:
           return Colors.grey;
         case InvoiceStatus.cancelled:
-          return Colors.orange;
+          return Colors.blueGrey;
         case InvoiceStatus.sent:
           return Colors.blue;
+        case InvoiceStatus.today:
+          return Colors.amber;
       }
     }
 

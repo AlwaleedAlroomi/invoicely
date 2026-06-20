@@ -17,12 +17,12 @@ const String _firstRunDoneKey = 'immediate_invoice_check_done';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  tz.initializeTimeZones();
-  tz.setLocalLocation(tz.getLocation('Asia/Riyadh'));
-  final db = AppDatabase();
   final sharedPrefs = await SharedPreferences.getInstance();
 
   if (Platform.isAndroid) {
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Riyadh'));
+    final db = AppDatabase();
     await NotificationService.instance.init(db);
     await NotificationService.instance.scheduleDaily9AMReminder();
     await Workmanager().initialize(callbackDispatcher);

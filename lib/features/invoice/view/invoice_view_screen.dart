@@ -199,16 +199,18 @@ class _StatusBadge extends StatelessWidget {
 
   Color get _color {
     switch (status) {
-      case InvoiceStatus.draft:
-        return Colors.grey;
-      case InvoiceStatus.sent:
-        return Colors.blue;
       case InvoiceStatus.paid:
         return Colors.green;
       case InvoiceStatus.overdue:
         return Colors.red;
+      case InvoiceStatus.draft:
+        return Colors.grey;
       case InvoiceStatus.cancelled:
-        return Colors.orange;
+        return Colors.blueGrey;
+      case InvoiceStatus.sent:
+        return Colors.blue;
+      case InvoiceStatus.today:
+        return Colors.amber;
     }
   }
 
@@ -224,6 +226,8 @@ class _StatusBadge extends StatelessWidget {
         return 'Overdue';
       case InvoiceStatus.cancelled:
         return 'Cancelled';
+      case InvoiceStatus.today:
+        return 'Today';
     }
   }
 
@@ -572,13 +576,14 @@ class _BottomActions extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   // PDF generation — next feature
-                  final businessProfileService = ref.read(businessProfileServiceProvider);
+                  final businessProfileService = ref.read(
+                    businessProfileServiceProvider,
+                  );
                   final prefs = ref.read(sharedPreferencesProvider);
                   final policy = DefaultSettings.getPolicy(prefs);
-                  final pdf = await InvoicePDFService(businessProfileService).generateInvoicePDF(
-                    invoice,
-                    policy: policy,
-                  );
+                  final pdf = await InvoicePDFService(
+                    businessProfileService,
+                  ).generateInvoicePDF(invoice, policy: policy);
 
                   if (!context.mounted) return;
                   showDialog(
@@ -617,8 +622,10 @@ class _BottomActions extends ConsumerWidget {
                                 child: ElevatedButton.icon(
                                   onPressed: () async {
                                     try {
-                                      final path = await InvoicePDFService(businessProfileService)
-                                          .savePDF(
+                                      final path =
+                                          await InvoicePDFService(
+                                            businessProfileService,
+                                          ).savePDF(
                                             pdf,
                                             '${invoice.client!.displayName} invoice - ${invoice.displayName}',
                                           );
