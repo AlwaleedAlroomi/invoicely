@@ -49,7 +49,7 @@ void callbackDispatcher() {
                     (tbl) =>
                         tbl.status.equalsValue(InvoiceStatus.sent) |
                         tbl.status.equalsValue(InvoiceStatus.overdue) |
-                        tbl.status.equalsValue(InvoiceStatus.draft),
+                        tbl.status.equalsValue(InvoiceStatus.today),
                   )
                   ..where(
                     (tbl) => tbl.dueDate.isBetweenValues(todayStart, todayEnd),

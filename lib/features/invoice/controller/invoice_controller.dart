@@ -90,7 +90,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     );
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
-        final checked = await _checkOverDue(fetched.data);
+        final checked = await _checkInvoiceDueDate(fetched.data);
         _allInvoices = checked;
         state = state.copyWith(
           isLoading: false,
@@ -122,7 +122,7 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
 
     switch (result) {
       case Success<List<InvoiceModel>> fetched:
-        final checked = await _checkOverDue(fetched.data);
+        final checked = await _checkInvoiceDueDate(fetched.data);
         _allInvoices = [..._allInvoices, ...checked];
         state = state.copyWith(
           isLoadingMore: false,
@@ -138,25 +138,56 @@ class InvoiceController extends StateNotifier<InvoiceListState> {
     }
   }
 
-  Future<List<InvoiceModel>> _checkOverDue(List<InvoiceModel> invoices) async {
+  Future<List<InvoiceModel>> _checkInvoiceDueDate(
+    List<InvoiceModel> invoices,
+  ) async {
     final now = DateTime.now();
-    final List<InvoiceModel> result = [];
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final tomorrowStart = todayStart.add(const Duration(days: 1));
+
+    final List<InvoiceModel> updatedInvoices =
+        []; // the result after checking invoices
+    final List<Future<void>> updateTasks =
+        []; // a list to save all status changes we want to operate => so we can do it all at once
 
     for (final invoice in invoices) {
+      InvoiceStatus newStatus = invoice.status;
       // only check sent invoices — skip paid, cancelled, draft
-      if (invoice.status == InvoiceStatus.sent &&
-          invoice.dueDate.isBefore(now)) {
-        await _invoiceRepository.updateInvoiceStatus(
-          invoice,
-          InvoiceStatus.overdue,
-        );
+      if (invoice.status == InvoiceStatus.sent) {
+        if (invoice.dueDate.isBefore(now)) {
+          newStatus = InvoiceStatus.overdue;
+        } else if (invoice.dueDate.isAfter(
+              todayStart.subtract(const Duration(microseconds: 1)),
+            ) &&
+            invoice.dueDate.isBefore(tomorrowStart)) {
+          // check if the invoice is between today and tomorrow to handle hh:mm:ss diff
+          newStatus = InvoiceStatus.today;
+        }
 
-        result.add(invoice.copyWith(status: InvoiceStatus.overdue));
+        if (newStatus != invoice.status) {
+          // here we add the invoice that needs to change its status by adding the task _repo.updateinvoicestatus func = list of future funcs
+          updateTasks.add(
+            _invoiceRepository.updateInvoiceStatus(invoice, newStatus),
+          );
+          // add the new invoice after changing
+          updatedInvoices.add(invoice.copyWith(status: newStatus));
+        } else {
+          updatedInvoices.add(invoice);
+        }
       } else {
-        result.add(invoice);
+        updatedInvoices.add(invoice);
       }
     }
-    return result;
+    if (updateTasks.isNotEmpty) {
+      // Future.wait is responsible for handling a list of asynchronous operations.
+      // so its like this: Future.wait([
+      // _invoiceRepository.updateInvoiceStatus(invoice, newStatus),
+      // _invoiceRepository.updateInvoiceStatus(invoice, newStatus),
+      // ]) == await _invoiceRepository.updateInvoiceStatus(invoice, newStatus);
+      // but it runs for a list of async operations
+      await Future.wait(updateTasks);
+    }
+    return updatedInvoices;
   }
 
   Future<void> updateInvoiceStatus(
