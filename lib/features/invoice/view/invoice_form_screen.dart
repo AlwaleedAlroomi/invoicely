@@ -53,6 +53,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     if (mounted && success) {
       if (state.error == null) {
         final invoice = InvoiceModel(
+          remoteId: widget.initialInvoice!.remoteId,
           invoiceNumber: state.invoiceNumber,
           issueDate: state.issueDate,
           dueDate: state.dueDate,
@@ -95,7 +96,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
             if (state.error != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer,
@@ -103,12 +107,18 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
+                    Icon(
+                      Icons.error_outline,
+                      color: theme.colorScheme.error,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         state.error!,
-                        style: TextStyle(color: theme.colorScheme.onErrorContainer),
+                        style: TextStyle(
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
                       ),
                     ),
                   ],
@@ -120,7 +130,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.primary.withValues(alpha: 0.8),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -128,7 +141,11 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.description_outlined, color: theme.colorScheme.onPrimary, size: 28),
+                  Icon(
+                    Icons.description_outlined,
+                    color: theme.colorScheme.onPrimary,
+                    size: 28,
+                  ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,9 +160,13 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        widget.initialInvoice != null ? 'Edit existing invoice' : 'Create new invoice',
+                        widget.initialInvoice != null
+                            ? 'Edit existing invoice'
+                            : 'Create new invoice',
                         style: TextStyle(
-                          color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
+                          color: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.8,
+                          ),
                           fontSize: 12,
                         ),
                       ),
@@ -190,11 +211,15 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
           left: 16,
           right: 16,
           top: 12,
-          bottom: isKeyboardOpen ? MediaQuery.of(context).viewInsets.bottom + 8 : 16,
+          bottom: isKeyboardOpen
+              ? MediaQuery.of(context).viewInsets.bottom + 8
+              : 16,
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3))),
+          border: Border(
+            top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
+          ),
         ),
         child: SafeArea(
           top: false,
@@ -203,11 +228,23 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
             child: ElevatedButton(
               onPressed: state.isLoading ? null : _onSubmit,
               style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Save Invoice', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      'Save Invoice',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
         ),
@@ -252,7 +289,11 @@ class _SectionHeader extends StatelessWidget {
             color: theme.colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 16, color: theme.colorScheme.onPrimaryContainer),
+          child: Icon(
+            icon,
+            size: 16,
+            color: theme.colorScheme.onPrimaryContainer,
+          ),
         ),
         const SizedBox(width: 10),
         Text(
