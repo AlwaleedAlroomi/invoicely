@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/theme/app_colors.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
+import 'package:invoicely/core/widgets/slidable_action.dart';
 import 'package:invoicely/features/clients/controller/client_controller.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/providers/client_providers.dart';
 import 'package:invoicely/features/clients/view/client_form_screen.dart';
 import 'package:invoicely/features/clients/view/client_view_screen.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ClientListScreen extends ConsumerStatefulWidget {
   const ClientListScreen({super.key});
@@ -213,74 +216,125 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
     );
   }
 
+  void _editClient(ClientModel client) {
+    Navigator.of(
+      context,
+    ).push(FadeThroughRoute(page: ClientFormScreen(initialClient: client)));
+  }
+
+  Future<void> _callClient(ClientModel client) async {
+    if (client.phone == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No phone number available')),
+      );
+      return;
+    }
+    final uri = Uri.parse('tel:${client.phone}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
   Widget _buildCleintListTile(ClientModel client) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: client.isActive
-              ? null
-              : Border.all(color: Colors.red[200]!, width: 1.5),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => Navigator.of(
-            context,
-          ).push(FadeThroughRoute(page: ClientViewScreen(initClient: client))),
-          onLongPress: () => _showDeleteDialog(client),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListTile(
-                      leading: CircleAvatar(
-                        child: Text(client.name[0].toUpperCase()),
-                      ),
-                      title: Text(
-                        client.name,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(client.email),
-                          if (client.city != null || client.country != null)
-                            Text(
-                              [
-                                client.city,
-                                client.country,
-                              ].whereType<String>().join(', '),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+    return Slidable(
+      key: ValueKey(client.remoteId),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          buildCircularAction(
+            context: context,
+            onTap: () => _editClient(client),
+            icon: Icons.edit_outlined,
+            label: 'Edit',
+            color: Colors.blue,
+          ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _callClient(client),
+            icon: Icons.phone_outlined,
+            label: 'Call',
+            color: Colors.green,
+          ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _showDeleteDialog(client),
+            icon: Icons.delete_outline,
+            label: 'Delete',
+            color: Colors.red,
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: client.isActive
+                ? null
+                : Border.all(color: Colors.red[200]!, width: 1.5),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => Navigator.of(context).push(
+              FadeThroughRoute(page: ClientViewScreen(initClient: client)),
+            ),
+            onLongPress: () => _showDeleteDialog(client),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        leading: CircleAvatar(
+                          child: Text(client.name[0].toUpperCase()),
+                        ),
+                        title: Text(
+                          client.name,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(client.email),
+                            if (client.city != null || client.country != null)
+                              Text(
+                                [
+                                  client.city,
+                                  client.country,
+                                ].whereType<String>().join(', '),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                        ],
-                      ),
-                      trailing: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            getFlagEmoji(client.country ?? ''),
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          if (!client.isActive)
+                          ],
+                        ),
+                        trailing: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
                             Text(
-                              'Archived',
-                              style: TextStyle(fontSize: 10, color: Colors.red),
+                              getFlagEmoji(client.country ?? ''),
+                              style: TextStyle(fontSize: 20),
                             ),
-                        ],
+                            if (!client.isActive)
+                              Text(
+                                'Archived',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.red,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

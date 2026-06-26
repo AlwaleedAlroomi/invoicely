@@ -1,9 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/services/permission_helper.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
+import 'package:invoicely/core/widgets/slidable_action.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/providers/client_providers.dart';
 import 'package:invoicely/features/clients/view/client_form_screen.dart';
@@ -199,6 +202,79 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
     );
   }
 
+  void _editInvoice(InvoiceModel invoice) async {
+    final updated = await Navigator.of(context).push<InvoiceModel>(
+      FadeThroughRoute(page: InvoiceFormScreen(initialInvoice: invoice)),
+    );
+    if (updated != null && mounted) {
+      ref.read(invoiceControllerProvider.notifier).fetchInvoices();
+    }
+  }
+
+  void _changeInvoiceStatus(InvoiceModel invoice) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Change Status',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ...InvoiceStatus.values.map(
+              (status) => RadioListTile<InvoiceStatus>(
+                title: Text(status.name),
+                value: status,
+                groupValue: invoice.status,
+                onChanged: (value) async {
+                  if (value == null || value == invoice.status) return;
+                  Navigator.pop(context);
+                  await ref
+                      .read(invoiceControllerProvider.notifier)
+                      .updateInvoiceStatus(invoice, value);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _deleteInvoice(InvoiceModel invoice) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Invoice?'),
+        content: Text(
+          'Are you sure you want to delete "${invoice.invoiceNumber}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(invoiceControllerProvider.notifier)
+                  .deleteInvoice(invoice);
+              Navigator.pop(ctx);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRecentInvoices(
     BuildContext context,
     WidgetRef ref,
@@ -264,51 +340,80 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
         statusColor = Colors.amber;
     }
     final client = invoice.client;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        onTap: () async {
-          await Navigator.of(context).push(
-            FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
-          );
-        },
-        leading: Container(
-          width: 4,
-          height: 40,
-          decoration: BoxDecoration(
-            color: statusColor,
-            borderRadius: BorderRadius.circular(2),
+    return Slidable(
+      key: ValueKey(invoice.remoteId),
+      endActionPane: ActionPane(
+        motion: ScrollMotion(),
+        children: [
+          buildCircularAction(
+            context: context,
+            onTap: () => _editInvoice(invoice),
+            icon: Icons.edit_outlined,
+            label: 'Edit',
+            color: Colors.blue,
           ),
-        ),
-        title: Text(
-          invoice.invoiceNumber,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          client?.name ?? 'Unknown',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              formatAmount(invoice.totalAmount, invoice.client?.currency),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _changeInvoiceStatus(invoice),
+            icon: Icons.swap_horiz_outlined,
+            label: 'Status',
+            color: Colors.orange,
+          ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _deleteInvoice(invoice),
+            icon: Icons.delete_outline,
+            label: 'Delete',
+            color: Colors.red,
+          ),
+        ],
+      ),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          onTap: () async {
+            await Navigator.of(context).push(
+              FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
+            );
+          },
+          leading: Container(
+            width: 4,
+            height: 40,
+            decoration: BoxDecoration(
+              color: statusColor,
+              borderRadius: BorderRadius.circular(2),
             ),
-            Text(
-              invoice.status.name.toUpperCase(),
-              style: TextStyle(
-                fontSize: 10,
-                color: statusColor,
-                fontWeight: FontWeight.bold,
+          ),
+          title: Text(
+            invoice.invoiceNumber,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            client?.name ?? 'Unknown',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                formatAmount(invoice.totalAmount, invoice.client?.currency),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-            ),
-          ],
+              Text(
+                invoice.status.name.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: statusColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

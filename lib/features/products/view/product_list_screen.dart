@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/theme/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/core/widgets/product_qr_dialog.dart';
 import 'package:invoicely/core/widgets/product_scanner_screen.dart';
+import 'package:invoicely/core/widgets/slidable_action.dart';
 import 'package:invoicely/features/products/controller/product_controller.dart';
 import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
@@ -442,52 +444,80 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   Widget _buildProductListTile(ProductModel product) {
     const double cardRadius = 12.0;
 
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(cardRadius),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(cardRadius),
-        onTap: () => _navigateToProductDetails(product),
-        onLongPress: () => _showDeleteDialog(product),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(cardRadius),
-            border: product.isActive
-                ? null
-                : Border.all(color: Colors.red[200]!, width: 1.5),
+    return Slidable(
+      key: ValueKey(product.remoteId),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          buildCircularAction(
+            context: context,
+            onTap: () => _editProduct(product),
+            icon: Icons.edit_outlined,
+            label: 'Edit',
+            color: Colors.blue,
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
+          buildCircularAction(
+            context: context,
+            onTap: () => _copySkuToClipboard(product.sku ?? ''),
+            icon: Icons.copy_outlined,
+            label: 'Copy SKU',
+            color: Colors.orange,
+          ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _showDeleteDialog(product),
+            icon: Icons.delete_outline,
+            label: 'Delete',
+            color: Colors.red,
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(cardRadius),
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(cardRadius),
+          onTap: () => _navigateToProductDetails(product),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(cardRadius),
+              border: product.isActive
+                  ? null
+                  : Border.all(color: Colors.red[200]!, width: 1.5),
             ),
-            leading: _buildProductImage(product, height: 50, width: 50),
-            title: Text(
-              product.name,
-              style: Theme.of(context).textTheme.bodyLarge,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              leading: _buildProductImage(product, height: 50, width: 50),
+              title: Text(
+                product.name,
+                style: Theme.of(context).textTheme.bodyLarge,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  _buildPriceText(product),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      _buildSkuChip(product),
+                      const SizedBox(width: 8),
+                      _buildStockInfo(product),
+                    ],
+                  ),
+                ],
+              ),
+              trailing: _buildQrButton(product, size: 50),
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                _buildPriceText(product),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    _buildSkuChip(product),
-                    const SizedBox(width: 8),
-                    _buildStockInfo(product),
-                  ],
-                ),
-              ],
-            ),
-            trailing: _buildQrButton(product, size: 50),
           ),
         ),
       ),
@@ -660,6 +690,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           size: size,
         ),
       ),
+    );
+  }
+
+  void _editProduct(ProductModel product) {
+    Navigator.of(context).push(
+      FadeThroughRoute<void>(page: ProductFormPage(initialProduct: product)),
     );
   }
 

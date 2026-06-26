@@ -86,7 +86,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     final controller = ref.read(clientControllerProvider.notifier);
     final clientData = ClientModel(
-      // remoteId: widget.initialClient?.remoteId,
+      isarId: widget.initialClient?.isarId,
+      remoteId: widget.initialClient?.remoteId,
       name: _nameController.text,
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
@@ -132,14 +133,20 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SectionHeader(theme: theme, icon: Icons.person_outline, title: 'Basic Information'),
+              _SectionHeader(
+                theme: theme,
+                icon: Icons.person_outline,
+                title: 'Basic Information',
+              ),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -148,9 +155,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                       textInputAction: TextInputAction.next,
                       canRequestFocus: true,
                       decoration: _inputDecoration(theme, label: 'Name*'),
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? 'Name is required'
-                          : null,
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Name is required' : null,
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
@@ -158,15 +164,17 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                       textInputAction: TextInputAction.next,
                       canRequestFocus: true,
                       decoration: _inputDecoration(theme, label: 'Email*'),
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? 'Email is required'
-                          : null,
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Email is required' : null,
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _phoneController,
                       textInputAction: TextInputAction.next,
-                      decoration: _inputDecoration(theme, label: 'Phone Number'),
+                      decoration: _inputDecoration(
+                        theme,
+                        label: 'Phone Number',
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 14),
@@ -180,14 +188,20 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               ),
               const SizedBox(height: 20),
 
-              _SectionHeader(theme: theme, icon: Icons.location_on_outlined, title: 'Address'),
+              _SectionHeader(
+                theme: theme,
+                icon: Icons.location_on_outlined,
+                title: 'Address',
+              ),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -209,14 +223,35 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                                           style: const TextStyle(fontSize: 20),
                                         ),
                                       )
-                                    : Icon(Icons.flag_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                                suffixIcon: Icon(Icons.keyboard_arrow_down, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                    : Icon(
+                                        Icons.flag_outlined,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                suffixIcon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
                                 filled: true,
-                                fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                labelStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                                fillColor: theme
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                labelStyle: TextStyle(
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
                               ),
-                              style: TextStyle(color: theme.colorScheme.onSurface),
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           ),
                         );
@@ -226,13 +261,19 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                     TextFormField(
                       controller: _addres1Controller,
                       textInputAction: TextInputAction.next,
-                      decoration: _inputDecoration(theme, label: 'Address Line 1'),
+                      decoration: _inputDecoration(
+                        theme,
+                        label: 'Address Line 1',
+                      ),
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _addres2Controller,
                       textInputAction: TextInputAction.next,
-                      decoration: _inputDecoration(theme, label: 'Address Line 2'),
+                      decoration: _inputDecoration(
+                        theme,
+                        label: 'Address Line 2',
+                      ),
                     ),
                     const SizedBox(height: 14),
                     Row(
@@ -261,7 +302,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                           child: TextFormField(
                             controller: _zipCodeController,
                             textInputAction: TextInputAction.next,
-                            decoration: _inputDecoration(theme, label: 'ZIP Code'),
+                            decoration: _inputDecoration(
+                              theme,
+                              label: 'ZIP Code',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -269,7 +313,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                           child: TextFormField(
                             controller: _taxNumberController,
                             textInputAction: TextInputAction.next,
-                            decoration: _inputDecoration(theme, label: 'Tax Number'),
+                            decoration: _inputDecoration(
+                              theme,
+                              label: 'Tax Number',
+                            ),
                           ),
                         ),
                       ],
@@ -279,14 +326,20 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               ),
               const SizedBox(height: 20),
 
-              _SectionHeader(theme: theme, icon: Icons.settings_outlined, title: 'Additional'),
+              _SectionHeader(
+                theme: theme,
+                icon: Icons.settings_outlined,
+                title: 'Additional',
+              ),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -314,11 +367,15 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           left: 16,
           right: 16,
           top: 12,
-          bottom: isKeyboardOpen ? MediaQuery.of(context).viewInsets.bottom + 8 : 16,
+          bottom: isKeyboardOpen
+              ? MediaQuery.of(context).viewInsets.bottom + 8
+              : 16,
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3))),
+          border: Border(
+            top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
+          ),
         ),
         child: SafeArea(
           top: false,
@@ -327,13 +384,24 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             child: ElevatedButton(
               onPressed: state.isLoading ? null : _saveClient,
               style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : Text(
-                      widget.initialClient == null ? 'Save Client' : 'Edit Client',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      widget.initialClient == null
+                          ? 'Save Client'
+                          : 'Edit Client',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
             ),
           ),
@@ -346,9 +414,16 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-      labelStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+      fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+        alpha: 0.3,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      labelStyle: TextStyle(
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
@@ -402,8 +477,12 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                           hintText: 'Search country...',
                           prefixIcon: const Icon(Icons.search),
                           filled: true,
-                          fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          fillColor: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.3),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         onChanged: (query) {
                           setState(() {
@@ -432,12 +511,20 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                               getFlagEmoji(country),
                               style: const TextStyle(fontSize: 24),
                             ),
-                            title: Text(country, style: theme.textTheme.bodyMedium),
+                            title: Text(
+                              country,
+                              style: theme.textTheme.bodyMedium,
+                            ),
                             trailing: isSelected
-                                ? Icon(Icons.check, color: theme.colorScheme.primary)
+                                ? Icon(
+                                    Icons.check,
+                                    color: theme.colorScheme.primary,
+                                  )
                                 : null,
                             selected: isSelected,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             onTap: () {
                               setState(() {
                                 _countryController.text = country;
@@ -463,7 +550,11 @@ class _SectionHeader extends StatelessWidget {
   final ThemeData theme;
   final IconData icon;
   final String title;
-  const _SectionHeader({required this.theme, required this.icon, required this.title});
+  const _SectionHeader({
+    required this.theme,
+    required this.icon,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -475,7 +566,11 @@ class _SectionHeader extends StatelessWidget {
             color: theme.colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 16, color: theme.colorScheme.onPrimaryContainer),
+          child: Icon(
+            icon,
+            size: 16,
+            color: theme.colorScheme.onPrimaryContainer,
+          ),
         ),
         const SizedBox(width: 10),
         Text(

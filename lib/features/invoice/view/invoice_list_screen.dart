@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:invoicely/core/enum/invoice_status.dart';
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
@@ -7,6 +8,7 @@ import 'package:invoicely/core/theme/app_colors.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/core/widgets/product_scanner_screen.dart';
+import 'package:invoicely/core/widgets/slidable_action.dart';
 import 'package:invoicely/features/invoice/controller/invoice_controller.dart';
 import 'package:invoicely/features/invoice/data/invoice_model.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
@@ -270,6 +272,79 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
     );
   }
 
+  void _editInvoice(InvoiceModel invoice) async {
+    final updated = await Navigator.of(context).push<InvoiceModel>(
+      FadeThroughRoute(page: InvoiceFormScreen(initialInvoice: invoice)),
+    );
+    if (updated != null && mounted) {
+      ref.read(invoiceControllerProvider.notifier).fetchInvoices();
+    }
+  }
+
+  void _changeInvoiceStatus(InvoiceModel invoice) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Change Status',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ...InvoiceStatus.values.map(
+              (status) => RadioListTile<InvoiceStatus>(
+                title: Text(status.name),
+                value: status,
+                groupValue: invoice.status,
+                onChanged: (value) async {
+                  if (value == null || value == invoice.status) return;
+                  Navigator.pop(context);
+                  await ref
+                      .read(invoiceControllerProvider.notifier)
+                      .updateInvoiceStatus(invoice, value);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _deleteInvoice(InvoiceModel invoice) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Invoice?'),
+        content: Text(
+          'Are you sure you want to delete "${invoice.invoiceNumber}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(invoiceControllerProvider.notifier)
+                  .deleteInvoice(invoice);
+              Navigator.pop(ctx);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInvoiceCard(BuildContext context, InvoiceModel invoice) {
     final client = invoice.client;
 
@@ -290,101 +365,133 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> {
         statusColor = Colors.amber;
     }
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          await Navigator.of(context).push(
-            FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
-          );
-          ref.read(invoiceControllerProvider.notifier).fetchInvoices();
-        },
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                width: 6,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    bottomLeft: Radius.circular(12),
+    return Slidable(
+      key: ValueKey(invoice.remoteId),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          buildCircularAction(
+            context: context,
+            onTap: () => _editInvoice(invoice),
+            icon: Icons.edit_outlined,
+            label: 'Edit',
+            color: Colors.blue,
+          ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _changeInvoiceStatus(invoice),
+            icon: Icons.swap_horiz_outlined,
+            label: 'Status',
+            color: Colors.orange,
+          ),
+          buildCircularAction(
+            context: context,
+            onTap: () => _deleteInvoice(invoice),
+            icon: Icons.delete_outline,
+            label: 'Delete',
+            color: Colors.red,
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 2,
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () async {
+            await Navigator.of(context).push(
+              FadeThroughRoute(page: InvoiceViewScreen(initInvoice: invoice)),
+            );
+            ref.read(invoiceControllerProvider.notifier).fetchInvoices();
+          },
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 6,
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
                   ),
                 ),
-              ),
 
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            invoice.invoiceNumber,
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                          _StatusBadge(
-                            status: invoice.status,
-                            color: statusColor,
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  client?.name ?? 'Unknown Client',
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Due: ${invoice.dueDate.day}/${invoice.dueDate.month}/${invoice.dueDate.year}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                        invoice.dueDate.isBefore(
-                                              DateTime.now(),
-                                            ) &&
-                                            invoice.status != InvoiceStatus.paid
-                                        ? Colors.red
-                                        : Colors.grey,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              invoice.invoiceNumber,
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                              ],
                             ),
-                          ),
-                          Text(
-                            formatAmount(
-                              invoice.totalAmount,
-                              invoice.client?.currency,
+                            _StatusBadge(
+                              status: invoice.status,
+                              color: statusColor,
                             ),
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                        const Divider(height: 20),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    client?.name ?? 'Unknown Client',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Due: ${invoice.dueDate.day}/${invoice.dueDate.month}/${invoice.dueDate.year}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color:
+                                          invoice.dueDate.isBefore(
+                                                DateTime.now(),
+                                              ) &&
+                                              invoice.status !=
+                                                  InvoiceStatus.paid
+                                          ? Colors.red
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              formatAmount(
+                                invoice.totalAmount,
+                                invoice.client?.currency,
+                              ),
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
