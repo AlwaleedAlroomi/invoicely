@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart' hide callbackDispatcher;
 import 'package:invoicely/core/services/background_worker.dart';
 import 'package:invoicely/core/services/notification_service.dart';
 import 'package:invoicely/core/theme/app_theme.dart';
+import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/data/database/database.dart';
+import 'package:invoicely/features/invoice/view/invoice_form_screen.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/settings/providers/settings_providers.dart';
 import 'package:invoicely/routing/main_shell.dart';
@@ -81,6 +84,8 @@ class _MyAppState extends ConsumerState<MyApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       NotificationService.instance.drainPendingPayload();
     });
+    _checkInitialLaunch();
+    _listenForWidgetClicks();
   }
 
   @override
@@ -95,6 +100,26 @@ class _MyAppState extends ConsumerState<MyApp> {
       home: const MainShell(),
       debugShowCheckedModeBanner: false,
       navigatorKey: NotificationService.instance.navigatorKey,
+    );
+  }
+}
+
+Future<void> _checkInitialLaunch() async {
+  final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+  _handleWidgetUri(uri);
+}
+
+void _listenForWidgetClicks() {
+  HomeWidget.widgetClicked.listen(_handleWidgetUri);
+}
+
+void _handleWidgetUri(Uri? uri) {
+  if (uri == null) {
+    return;
+  }
+  if (uri.host == 'invoice' && uri.pathSegments.contains("new")) {
+    NotificationService.instance.navigatorKey.currentState?.push(
+      FadeThroughRoute(page: InvoiceFormScreen()),
     );
   }
 }

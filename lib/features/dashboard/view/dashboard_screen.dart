@@ -18,6 +18,7 @@ import 'package:invoicely/features/products/data/product_model.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/products/view/product_form_screen.dart';
 import 'package:invoicely/features/settings/data/default_settings.dart';
+import 'package:home_widget/home_widget.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -160,6 +161,17 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
         .length;
     final activeClients = clients.where((c) => c.isActive).length;
     final lowStock = products.where((p) => p.stockQuantity < 5).length;
+
+    // for home widget
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateNativeWidget(
+        totalRevenue: totalRevenue,
+        pendingCount: pendingCount,
+        activeClients: activeClients,
+        lowStock: lowStock,
+        currency: defaultCurrency,
+      );
+    });
 
     return Row(
       children: [
@@ -552,4 +564,27 @@ class _ActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+void updateNativeWidget({
+  required double totalRevenue,
+  required int pendingCount,
+  required int activeClients,
+  required int lowStock,
+  required String currency,
+}) async {
+  // 1. Save data using keys matching the Kotlin string lookups
+  await HomeWidget.saveWidgetData<String>(
+    'revenue',
+    formatAmount(totalRevenue, currency, decimals: 0),
+  );
+  await HomeWidget.saveWidgetData<String>('pending_count', '$pendingCount');
+  await HomeWidget.saveWidgetData<String>('clients_count', '$activeClients');
+  await HomeWidget.saveWidgetData<String>('low_stock_count', '$lowStock');
+
+  // 2. Request the system to redraw the widget layout
+  await HomeWidget.updateWidget(
+    androidName:
+        'DailyInvoicesSummary', // Must match your Kotlin class name perfectly
+  );
 }
