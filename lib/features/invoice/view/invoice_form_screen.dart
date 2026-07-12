@@ -53,7 +53,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     if (mounted && success) {
       if (state.error == null) {
         final invoice = InvoiceModel(
-          remoteId: widget.initialInvoice!.remoteId,
+          remoteId: widget.initialInvoice?.remoteId,
           invoiceNumber: state.invoiceNumber,
           issueDate: state.issueDate,
           dueDate: state.dueDate,
