@@ -346,7 +346,7 @@ class _ClientListScreenState extends ConsumerState<ClientListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Delete Product?',
+          'Delete Client?',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         content: client.isActive

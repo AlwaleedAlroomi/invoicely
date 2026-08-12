@@ -16,7 +16,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   AppDatabase? _db;
 
-  String? _pendingPaylod;
+  String? _pendingPayload;
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -45,16 +45,16 @@ class NotificationService {
       if (payload != null && payload.isNotEmpty) {
         // await Future.delayed(const Duration(milliseconds: 500));
         // _navigateToInvoice(payload);
-        _pendingPaylod = payload;
+        _pendingPayload = payload;
       }
     }
   }
 
   void drainPendingPayload() {
-    if (_pendingPaylod == null) return;
+    if (_pendingPayload == null) return;
 
-    final payload = _pendingPaylod;
-    _pendingPaylod = null;
+    final payload = _pendingPayload;
+    _pendingPayload = null;
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _navigateToInvoice(payload!);

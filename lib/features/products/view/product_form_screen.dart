@@ -25,6 +25,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   String? _existingImagePath;
   String? _fullDisplayPath;
   bool _imageRemoved = false;
+  String? oldImage;
 
   Future<String> _getFullImagePath(String filename) async {
     final directory = await getApplicationDocumentsDirectory();
@@ -95,7 +96,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
     final controller = ref.read(productControllerProvider.notifier);
 
-    String? finalImagePath = _existingImagePath;
+    String? finalImagePath = oldImage;
 
     if (_imageRemoved && finalImagePath != null) {
       await _deleteOldImage(finalImagePath);
@@ -238,7 +239,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +255,10 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                             controller: _nameController,
                             textInputAction: TextInputAction.next,
                             canRequestFocus: true,
-                            decoration: _inputDecoration(theme, label: 'Product Name*'),
+                            decoration: _inputDecoration(
+                              theme,
+                              label: 'Product Name*',
+                            ),
                             validator: (v) => (v == null || v.isEmpty)
                                 ? 'Name is required'
                                 : null,
@@ -261,7 +267,11 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                           TextFormField(
                             controller: _priceController,
                             textInputAction: TextInputAction.next,
-                            decoration: _inputDecoration(theme, label: 'Unit Price*', prefix: '\$'),
+                            decoration: _inputDecoration(
+                              theme,
+                              label: 'Unit Price*',
+                              prefix: '\$',
+                            ),
                             keyboardType: TextInputType.number,
                             validator: (v) => (double.tryParse(v ?? '') == null)
                                 ? 'Enter a valid price'
@@ -280,13 +290,19 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: TextFormField(
                   controller: _skuController,
                   readOnly: true,
                   canRequestFocus: false,
-                  decoration: _inputDecoration(theme, label: 'SKU (Barcode)', icon: Icons.lock_outline),
+                  decoration: _inputDecoration(
+                    theme,
+                    label: 'SKU (Barcode)',
+                    icon: Icons.lock_outline,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -296,7 +312,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: TextFormField(
                   controller: _descController,
@@ -320,11 +338,15 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           left: 16,
           right: 16,
           top: 12,
-          bottom: isKeyboardOpen ? MediaQuery.of(context).viewInsets.bottom + 8 : 16,
+          bottom: isKeyboardOpen
+              ? MediaQuery.of(context).viewInsets.bottom + 8
+              : 16,
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3))),
+          border: Border(
+            top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
+          ),
         ),
         child: SafeArea(
           top: false,
@@ -333,13 +355,24 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             child: ElevatedButton(
               onPressed: state.isLoading ? null : _saveProduct,
               style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : Text(
-                      widget.initialProduct == null ? 'Save Product' : 'Edit Product',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      widget.initialProduct == null
+                          ? 'Save Product'
+                          : 'Edit Product',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
             ),
           ),
@@ -348,15 +381,27 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
     );
   }
 
-  InputDecoration _inputDecoration(ThemeData theme, {required String label, String? prefix, IconData? icon}) {
+  InputDecoration _inputDecoration(
+    ThemeData theme, {
+    required String label,
+    String? prefix,
+    IconData? icon,
+  }) {
     return InputDecoration(
       labelText: label,
       prefixText: prefix,
       prefixIcon: icon != null ? Icon(icon, size: 18) : null,
       filled: true,
-      fillColor: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-      labelStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+      fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+        alpha: 0.3,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      labelStyle: TextStyle(
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
@@ -375,10 +420,14 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             width: 100,
             height: 110,
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.3,
+              ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: hasImage ? theme.colorScheme.primary : theme.dividerColor,
+                color: hasImage
+                    ? theme.colorScheme.primary
+                    : theme.dividerColor,
                 width: hasImage ? 1.5 : 1,
               ),
               image: hasImage && imagePath != null
@@ -392,11 +441,22 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_a_photo, size: 28, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+                      Icon(
+                        Icons.add_a_photo,
+                        size: 28,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         'Image',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.3,
+                          ),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   )
@@ -410,6 +470,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
             child: GestureDetector(
               onTap: () {
                 setState(() {
+                  oldImage = _existingImagePath;
                   _pickedImage = null;
                   _existingImagePath = null;
                   _imageRemoved = true;
@@ -453,13 +514,18 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.3,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.remove_circle_outline, color: theme.colorScheme.error),
+                  icon: Icon(
+                    Icons.remove_circle_outline,
+                    color: theme.colorScheme.error,
+                  ),
                   onPressed: _decrementStock,
                 ),
                 Expanded(
@@ -472,13 +538,20 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                       border: InputBorder.none,
                       hintText: '0',
                     ),
-                    style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     onChanged: _updateStock,
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+                  icon: Icon(
+                    Icons.add_circle_outline,
+                    color: theme.colorScheme.primary,
+                  ),
                   onPressed: _incrementStock,
                 ),
               ],
@@ -486,8 +559,10 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
           ),
           Slider(
             activeColor: theme.colorScheme.primary,
-            inactiveColor: theme.colorScheme.surfaceVariant,
-            overlayColor: WidgetStatePropertyAll(theme.colorScheme.primary.withValues(alpha: 0.1)),
+            inactiveColor: theme.colorScheme.surfaceContainerHighest,
+            overlayColor: WidgetStatePropertyAll(
+              theme.colorScheme.primary.withValues(alpha: 0.1),
+            ),
             divisions: maxSliderValue,
             value: _sliderValue,
             min: 0,

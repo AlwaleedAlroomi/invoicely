@@ -37,7 +37,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     _emailController = TextEditingController(text: widget.initialClient?.email);
     _phoneController = TextEditingController(text: widget.initialClient?.phone);
     _websiteController = TextEditingController(
-      text: widget.initialClient?.email,
+      text: widget.initialClient?.website,
     );
     _countryController = TextEditingController(
       text: widget.initialClient?.country == null
