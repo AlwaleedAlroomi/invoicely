@@ -13,28 +13,64 @@ void showProductQrDialog(BuildContext context, ProductModel product) {
       return AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Column(
-          children: [
-            Text(
-              product.name,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-            ),
-            Text(
-              "SKU: ${product.sku}",
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
+        title: Text(
+          "Product QR",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
         ),
+        // title: Column(
+        //   children: [
+        //     Text(
+        //       product.name,
+        //       textAlign: TextAlign.center,
+        //       style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        //     ),
+        //     Text(
+        //       "SKU: ${product.sku}",
+        //       style: const TextStyle(fontSize: 12, color: Colors.grey),
+        //     ),
+        //   ],
+        // ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             RepaintBoundary(
               key: qrKey,
-              child: SizedBox(
-                width: 250,
-                height: 250,
-                child: qrService.buildQrView(context, product),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      product.name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors
+                            .black, // Dark text ensures visibility on white background
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "SKU: ${product.sku ?? 'N/A'}",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: 250,
+                      height: 250,
+                      child: qrService.buildQrView(context, product),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),

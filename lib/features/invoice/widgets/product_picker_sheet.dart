@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
+import 'package:invoicely/core/widgets/product_scanner_screen.dart';
 import 'package:invoicely/features/invoice/providers/invoice_provider.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/products/view/product_form_screen.dart';
@@ -61,6 +62,62 @@ class _ProductPickerSheetState extends ConsumerState<ProductPickerSheet> {
                 },
                 label: Text('Add Product'),
                 icon: Icon(Icons.add),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                    FadeThroughRoute(
+                      page: ProductScannerScreen(
+                        title: "Scan Products QR",
+                        isMultiScan: true,
+                        onScan: (sku) async {
+                          await ref
+                              .read(productControllerProvider.notifier)
+                              .getProductBySku(sku);
+                          final productState = ref.read(
+                            productControllerProvider,
+                          );
+                          if (productState.failure == null &&
+                              productState.selectedProduct != null) {
+                            final product = productState.selectedProduct!;
+                            final invoiceNotifier = ref.read(
+                              invoiceFormControllerProvider.notifier,
+                            );
+                            final currentItems = ref
+                                .read(invoiceFormControllerProvider)
+                                .items;
+                            final existingIndex = currentItems.indexWhere(
+                              (item) =>
+                                  item.productId == product.isarId.toString(),
+                            );
+                            if (existingIndex != -1) {
+                              final existingItem = currentItems[existingIndex];
+                              if (existingItem.quantity >=
+                                  product.stockQuantity) {
+                                return false;
+                              }
+                              invoiceNotifier.updateItemQuantity(
+                                existingIndex,
+                                existingItem.quantity + 1,
+                              );
+                            } else {
+                              if (product.stockQuantity <= 0) {
+                                return false;
+                              }
+                              ref
+                                  .read(invoiceFormControllerProvider.notifier)
+                                  .addItem(product, 1);
+                            }
+                            return true;
+                          }
+                          return false;
+                        },
+                      ),
+                    ),
+                  );
+                },
+                label: Text("Scan Product"),
+                icon: Icon(Icons.qr_code_2),
               ),
             ],
           ),

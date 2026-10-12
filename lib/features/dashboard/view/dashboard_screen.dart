@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -573,6 +575,7 @@ void updateNativeWidget({
   required int lowStock,
   required String currency,
 }) async {
+  if (!Platform.isAndroid) return;
   // 1. Save data using keys matching the Kotlin string lookups
   await HomeWidget.saveWidgetData<String>(
     'revenue',

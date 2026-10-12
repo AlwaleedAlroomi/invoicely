@@ -84,8 +84,10 @@ class _MyAppState extends ConsumerState<MyApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       NotificationService.instance.drainPendingPayload();
     });
-    _checkInitialLaunch();
-    _listenForWidgetClicks();
+    if (Platform.isAndroid) {
+      _checkInitialLaunch();
+      _listenForWidgetClicks();
+    }
   }
 
   @override

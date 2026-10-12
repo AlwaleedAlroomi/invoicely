@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:invoicely/core/services/scan_from_image.dart';
+import 'package:invoicely/core/theme/app_colors.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:invoicely/features/products/view/product_view_screen.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter/services.dart';
 
-enum ScanResultType { found, notFound, manual }
+enum ScanResultType { found, notFound, manual, maxStockReached }
 
 class ScanResult {
   final ScanResultType type;
@@ -20,12 +21,14 @@ class ProductScannerScreen extends ConsumerStatefulWidget {
   final Function(String sku)? onScan;
   final String title;
   final String serviceName;
+  final bool isMultiScan;
 
   const ProductScannerScreen({
     super.key,
     this.onScan,
     this.title = "Scan Product QR",
     this.serviceName = 'SKU',
+    this.isMultiScan = false,
   });
 
   @override
@@ -38,10 +41,15 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
   late AnimationController _zoomAnimationController;
   double _currentScale = 0.0;
   final MobileScannerController controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
     torchEnabled: false,
   );
+
+  String? _lastScannedSku;
+  DateTime? _lastScannedTime;
+  bool _isProcessing = false;
+  int _sessionScanCount = 0;
 
   @override
   void initState() {
@@ -81,19 +89,19 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
 
   @override
   Widget build(BuildContext context) {
-    print(widget.serviceName);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
+          if (widget.isMultiScan)
+            TextButton.icon(
+              onPressed: () => Navigator.pop(context, false),
+              icon: const Icon(Icons.check, color: Colors.white),
+              label: const Text("Done", style: TextStyle(color: Colors.white)),
+            ),
           IconButton(
             icon: const Icon(Icons.flash_on),
             onPressed: () => controller.toggleTorch(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.cameraswitch),
-            onPressed: () => controller.switchCamera(),
           ),
         ],
       ),
@@ -118,17 +126,72 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
             child: MobileScanner(
               controller: controller,
               onDetect: (capture) async {
+                final now = DateTime.now();
                 final List<Barcode> barcodes = capture.barcodes;
                 if (barcodes.isEmpty) return;
 
                 final String? rawValue = barcodes.first.rawValue;
                 if (rawValue == null) return;
 
-                await controller.stop();
+                if (rawValue == _lastScannedSku &&
+                    _lastScannedTime != null &&
+                    now.difference(_lastScannedTime!) <
+                        Duration(milliseconds: 1500)) {
+                  return;
+                }
 
-                await HapticFeedback.mediumImpact();
-                if (!context.mounted) return;
-                Navigator.pop(context, rawValue);
+                if (_isProcessing) return;
+                setState(() {
+                  _isProcessing = true;
+                  _lastScannedSku = rawValue;
+                  _lastScannedTime = now;
+                });
+
+                try {
+                  if (widget.isMultiScan) {
+                    if (widget.onScan != null) {
+                      final bool success = await widget.onScan!(rawValue);
+                      if (success) {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _sessionScanCount++;
+                        });
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Product Count: $_sessionScanCount"),
+                            backgroundColor: AppColors.success,
+                            duration: const Duration(milliseconds: 800),
+                          ),
+                        );
+                      } else {
+                        HapticFeedback.vibrate();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Product not found or inactive"),
+                            backgroundColor: Colors.red,
+                            duration: Duration(milliseconds: 800),
+                          ),
+                        );
+                      }
+                    }
+                    _isProcessing = false;
+                  } else {
+                    await controller.stop();
+                    await HapticFeedback.mediumImpact();
+                    if (!context.mounted) return;
+                    Navigator.pop(context, rawValue);
+                  }
+                } finally {
+                  if (mounted) {
+                    setState(() {
+                      _isProcessing = false;
+                    });
+                  }
+                }
               },
               errorBuilder: (context, error) {
                 return Container(
@@ -171,12 +234,18 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
               icon: const Icon(Icons.keyboard),
               label: const Text("Enter SKU Manually"),
             ),
-          IconButton(
-            onPressed: () async {
-              _handleGalleryScan(context);
-            },
-            icon: Icon(Icons.photo, size: 75),
-          ),
+          if (!widget.isMultiScan)
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () async {
+                    _handleGalleryScan(context);
+                  },
+                  icon: Icon(Icons.photo, size: 75),
+                ),
+              ],
+            ),
         ],
       ),
     );

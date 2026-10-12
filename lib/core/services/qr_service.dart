@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -34,9 +35,11 @@ class QrDataFormatter {
 // Gallery Service
 class GalleryService {
   Future<bool> ensureAccess() async {
-    final hasAccess = await Gal.hasAccess();
-    if (!hasAccess) {
-      return await Gal.requestAccess();
+    if (Platform.isAndroid) {
+      final hasAccess = await Gal.hasAccess();
+      if (!hasAccess) {
+        return await Gal.requestAccess();
+      }
     }
     return true;
   }
@@ -106,6 +109,7 @@ class QrService {
         ),
       ),
       child: QrImageView(
+        backgroundColor: Colors.white,
         data: _dataFormatter.formatProductData(product),
         version: QrVersions.auto,
         size: size,
@@ -128,9 +132,11 @@ class QrService {
     String productName,
   ) async {
     try {
-      final hasAccess = await _galleryService.ensureAccess();
-      if (!hasAccess) {
-        return const QrCaptureResult.failure('Gallery access denied');
+      if (Platform.isAndroid) {
+        final hasAccess = await _galleryService.ensureAccess();
+        if (!hasAccess) {
+          return const QrCaptureResult.failure('Gallery access denied');
+        }
       }
 
       final imageBytes = await _imageCaptureService.captureWidget(key);
