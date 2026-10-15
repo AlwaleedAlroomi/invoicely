@@ -77,40 +77,41 @@ class _ProductPickerSheetState extends ConsumerState<ProductPickerSheet> {
                           final productState = ref.read(
                             productControllerProvider,
                           );
-                          if (productState.failure == null &&
-                              productState.selectedProduct != null) {
-                            final product = productState.selectedProduct!;
-                            final invoiceNotifier = ref.read(
-                              invoiceFormControllerProvider.notifier,
-                            );
-                            final currentItems = ref
-                                .read(invoiceFormControllerProvider)
-                                .items;
-                            final existingIndex = currentItems.indexWhere(
-                              (item) =>
-                                  item.productId == product.isarId.toString(),
-                            );
-                            if (existingIndex != -1) {
-                              final existingItem = currentItems[existingIndex];
-                              if (existingItem.quantity >=
-                                  product.stockQuantity) {
-                                return false;
-                              }
-                              invoiceNotifier.updateItemQuantity(
-                                existingIndex,
-                                existingItem.quantity + 1,
-                              );
-                            } else {
-                              if (product.stockQuantity <= 0) {
-                                return false;
-                              }
-                              ref
-                                  .read(invoiceFormControllerProvider.notifier)
-                                  .addItem(product, 1);
-                            }
-                            return true;
+                          if (productState.failure != null ||
+                              productState.selectedProduct == null) {
+                            return ScanResultType.notFound;
                           }
-                          return false;
+
+                          final product = productState.selectedProduct!;
+                          final invoiceNotifier = ref.read(
+                            invoiceFormControllerProvider.notifier,
+                          );
+                          final currentItems = ref
+                              .read(invoiceFormControllerProvider)
+                              .items;
+
+                          final existingIndex = currentItems.indexWhere(
+                            (item) =>
+                                item.productId == product.isarId.toString(),
+                          );
+
+                          if (existingIndex != -1) {
+                            final existingItem = currentItems[existingIndex];
+                            if (existingItem.quantity >=
+                                product.stockQuantity) {
+                              return ScanResultType.maxStockReached;
+                            }
+                            invoiceNotifier.updateItemQuantity(
+                              existingIndex,
+                              existingItem.quantity++,
+                            );
+                          } else {
+                            if (product.stockQuantity <= 0) {
+                              return ScanResultType.maxStockReached;
+                            }
+                            invoiceNotifier.addItem(product, 1);
+                          }
+                          return ScanResultType.found;
                         },
                       ),
                     ),

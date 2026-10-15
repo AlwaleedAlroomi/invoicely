@@ -150,35 +150,57 @@ class _ProductScannerScreenState extends ConsumerState<ProductScannerScreen>
                 try {
                   if (widget.isMultiScan) {
                     if (widget.onScan != null) {
-                      final bool success = await widget.onScan!(rawValue);
-                      if (success) {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _sessionScanCount++;
-                        });
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Product Count: $_sessionScanCount"),
-                            backgroundColor: AppColors.success,
-                            duration: const Duration(milliseconds: 800),
-                          ),
-                        );
-                      } else {
-                        HapticFeedback.vibrate();
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Product not found or inactive"),
-                            backgroundColor: Colors.red,
-                            duration: Duration(milliseconds: 800),
-                          ),
-                        );
+                      final ScanResultType result = await widget.onScan!(
+                        rawValue,
+                      );
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).clearSnackBars();
+
+                      switch (result) {
+                        case ScanResultType.found:
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            _sessionScanCount++;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Product Count: $_sessionScanCount",
+                              ),
+                              backgroundColor: AppColors.success,
+                              duration: const Duration(milliseconds: 800),
+                            ),
+                          );
+                          break;
+                        case ScanResultType.maxStockReached:
+                          HapticFeedback.vibrate();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Reached maximum available stock limit",
+                              ),
+                              backgroundColor: Colors.orange,
+                              duration: Duration(milliseconds: 800),
+                            ),
+                          );
+                          break;
+                        case ScanResultType.notFound:
+                          HapticFeedback.vibrate();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Invalid QR Code: Product not found",
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: Duration(milliseconds: 800),
+                            ),
+                          );
+                          break;
+                        default:
+                          print("not yet");
+                          break;
                       }
                     }
-                    _isProcessing = false;
                   } else {
                     await controller.stop();
                     await HapticFeedback.mediumImpact();
