@@ -110,7 +110,21 @@ class BusinessProfiles extends Table {
   TextColumn? get country => text().nullable()();
 }
 
-@DriftDatabase(tables: [Invoices, Clients, Products, BusinessProfiles])
+class BusinessExpenses extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text().withLength(min: 1, max: 100)();
+  RealColumn get amount => real()();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get category => text().nullable()();
+  TextColumn get vendorName => text().withLength(min: 1, max: 100).nullable()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn? get lastUpdated => dateTime().nullable()();
+  DateTimeColumn? get createdAt => dateTime().nullable()();
+}
+
+@DriftDatabase(
+  tables: [Invoices, Clients, Products, BusinessProfiles, BusinessExpenses],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
