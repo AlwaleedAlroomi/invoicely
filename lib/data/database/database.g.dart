@@ -3381,6 +3381,18 @@ class $BusinessExpensesTable extends BusinessExpenses
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -3447,6 +3459,21 @@ class $BusinessExpensesTable extends BusinessExpenses
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _lastUpdatedMeta = const VerificationMeta(
     'lastUpdated',
   );
@@ -3472,12 +3499,14 @@ class $BusinessExpensesTable extends BusinessExpenses
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    remoteId,
     title,
     amount,
     date,
     category,
     vendorName,
     notes,
+    isActive,
     lastUpdated,
     createdAt,
   ];
@@ -3495,6 +3524,14 @@ class $BusinessExpensesTable extends BusinessExpenses
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteIdMeta);
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -3538,6 +3575,12 @@ class $BusinessExpensesTable extends BusinessExpenses
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     if (data.containsKey('last_updated')) {
       context.handle(
         _lastUpdatedMeta,
@@ -3566,6 +3609,10 @@ class $BusinessExpensesTable extends BusinessExpenses
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      )!,
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
@@ -3590,6 +3637,10 @@ class $BusinessExpensesTable extends BusinessExpenses
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       lastUpdated: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_updated'],
@@ -3609,22 +3660,26 @@ class $BusinessExpensesTable extends BusinessExpenses
 
 class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
   final int id;
+  final String remoteId;
   final String title;
   final double amount;
   final DateTime date;
   final String? category;
   final String? vendorName;
   final String? notes;
+  final bool isActive;
   final DateTime? lastUpdated;
   final DateTime? createdAt;
   const BusinessExpense({
     required this.id,
+    required this.remoteId,
     required this.title,
     required this.amount,
     required this.date,
     this.category,
     this.vendorName,
     this.notes,
+    required this.isActive,
     this.lastUpdated,
     this.createdAt,
   });
@@ -3632,6 +3687,7 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['remote_id'] = Variable<String>(remoteId);
     map['title'] = Variable<String>(title);
     map['amount'] = Variable<double>(amount);
     map['date'] = Variable<DateTime>(date);
@@ -3644,6 +3700,7 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    map['is_active'] = Variable<bool>(isActive);
     if (!nullToAbsent || lastUpdated != null) {
       map['last_updated'] = Variable<DateTime>(lastUpdated);
     }
@@ -3656,6 +3713,7 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
   BusinessExpensesCompanion toCompanion(bool nullToAbsent) {
     return BusinessExpensesCompanion(
       id: Value(id),
+      remoteId: Value(remoteId),
       title: Value(title),
       amount: Value(amount),
       date: Value(date),
@@ -3668,6 +3726,7 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      isActive: Value(isActive),
       lastUpdated: lastUpdated == null && nullToAbsent
           ? const Value.absent()
           : Value(lastUpdated),
@@ -3684,12 +3743,14 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return BusinessExpense(
       id: serializer.fromJson<int>(json['id']),
+      remoteId: serializer.fromJson<String>(json['remoteId']),
       title: serializer.fromJson<String>(json['title']),
       amount: serializer.fromJson<double>(json['amount']),
       date: serializer.fromJson<DateTime>(json['date']),
       category: serializer.fromJson<String?>(json['category']),
       vendorName: serializer.fromJson<String?>(json['vendorName']),
       notes: serializer.fromJson<String?>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       lastUpdated: serializer.fromJson<DateTime?>(json['lastUpdated']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
     );
@@ -3699,12 +3760,14 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'remoteId': serializer.toJson<String>(remoteId),
       'title': serializer.toJson<String>(title),
       'amount': serializer.toJson<double>(amount),
       'date': serializer.toJson<DateTime>(date),
       'category': serializer.toJson<String?>(category),
       'vendorName': serializer.toJson<String?>(vendorName),
       'notes': serializer.toJson<String?>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
       'lastUpdated': serializer.toJson<DateTime?>(lastUpdated),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
     };
@@ -3712,28 +3775,33 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
 
   BusinessExpense copyWith({
     int? id,
+    String? remoteId,
     String? title,
     double? amount,
     DateTime? date,
     Value<String?> category = const Value.absent(),
     Value<String?> vendorName = const Value.absent(),
     Value<String?> notes = const Value.absent(),
+    bool? isActive,
     Value<DateTime?> lastUpdated = const Value.absent(),
     Value<DateTime?> createdAt = const Value.absent(),
   }) => BusinessExpense(
     id: id ?? this.id,
+    remoteId: remoteId ?? this.remoteId,
     title: title ?? this.title,
     amount: amount ?? this.amount,
     date: date ?? this.date,
     category: category.present ? category.value : this.category,
     vendorName: vendorName.present ? vendorName.value : this.vendorName,
     notes: notes.present ? notes.value : this.notes,
+    isActive: isActive ?? this.isActive,
     lastUpdated: lastUpdated.present ? lastUpdated.value : this.lastUpdated,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
   );
   BusinessExpense copyWithCompanion(BusinessExpensesCompanion data) {
     return BusinessExpense(
       id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
       title: data.title.present ? data.title.value : this.title,
       amount: data.amount.present ? data.amount.value : this.amount,
       date: data.date.present ? data.date.value : this.date,
@@ -3742,6 +3810,7 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
           ? data.vendorName.value
           : this.vendorName,
       notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       lastUpdated: data.lastUpdated.present
           ? data.lastUpdated.value
           : this.lastUpdated,
@@ -3753,12 +3822,14 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
   String toString() {
     return (StringBuffer('BusinessExpense(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('title: $title, ')
           ..write('amount: $amount, ')
           ..write('date: $date, ')
           ..write('category: $category, ')
           ..write('vendorName: $vendorName, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('lastUpdated: $lastUpdated, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -3768,12 +3839,14 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
   @override
   int get hashCode => Object.hash(
     id,
+    remoteId,
     title,
     amount,
     date,
     category,
     vendorName,
     notes,
+    isActive,
     lastUpdated,
     createdAt,
   );
@@ -3782,69 +3855,82 @@ class BusinessExpense extends DataClass implements Insertable<BusinessExpense> {
       identical(this, other) ||
       (other is BusinessExpense &&
           other.id == this.id &&
+          other.remoteId == this.remoteId &&
           other.title == this.title &&
           other.amount == this.amount &&
           other.date == this.date &&
           other.category == this.category &&
           other.vendorName == this.vendorName &&
           other.notes == this.notes &&
+          other.isActive == this.isActive &&
           other.lastUpdated == this.lastUpdated &&
           other.createdAt == this.createdAt);
 }
 
 class BusinessExpensesCompanion extends UpdateCompanion<BusinessExpense> {
   final Value<int> id;
+  final Value<String> remoteId;
   final Value<String> title;
   final Value<double> amount;
   final Value<DateTime> date;
   final Value<String?> category;
   final Value<String?> vendorName;
   final Value<String?> notes;
+  final Value<bool> isActive;
   final Value<DateTime?> lastUpdated;
   final Value<DateTime?> createdAt;
   const BusinessExpensesCompanion({
     this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
     this.title = const Value.absent(),
     this.amount = const Value.absent(),
     this.date = const Value.absent(),
     this.category = const Value.absent(),
     this.vendorName = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.lastUpdated = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   BusinessExpensesCompanion.insert({
     this.id = const Value.absent(),
+    required String remoteId,
     required String title,
     required double amount,
     required DateTime date,
     this.category = const Value.absent(),
     this.vendorName = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.lastUpdated = const Value.absent(),
     this.createdAt = const Value.absent(),
-  }) : title = Value(title),
+  }) : remoteId = Value(remoteId),
+       title = Value(title),
        amount = Value(amount),
        date = Value(date);
   static Insertable<BusinessExpense> custom({
     Expression<int>? id,
+    Expression<String>? remoteId,
     Expression<String>? title,
     Expression<double>? amount,
     Expression<DateTime>? date,
     Expression<String>? category,
     Expression<String>? vendorName,
     Expression<String>? notes,
+    Expression<bool>? isActive,
     Expression<DateTime>? lastUpdated,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
       if (title != null) 'title': title,
       if (amount != null) 'amount': amount,
       if (date != null) 'date': date,
       if (category != null) 'category': category,
       if (vendorName != null) 'vendor_name': vendorName,
       if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
       if (lastUpdated != null) 'last_updated': lastUpdated,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -3852,23 +3938,27 @@ class BusinessExpensesCompanion extends UpdateCompanion<BusinessExpense> {
 
   BusinessExpensesCompanion copyWith({
     Value<int>? id,
+    Value<String>? remoteId,
     Value<String>? title,
     Value<double>? amount,
     Value<DateTime>? date,
     Value<String?>? category,
     Value<String?>? vendorName,
     Value<String?>? notes,
+    Value<bool>? isActive,
     Value<DateTime?>? lastUpdated,
     Value<DateTime?>? createdAt,
   }) {
     return BusinessExpensesCompanion(
       id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
       title: title ?? this.title,
       amount: amount ?? this.amount,
       date: date ?? this.date,
       category: category ?? this.category,
       vendorName: vendorName ?? this.vendorName,
       notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -3879,6 +3969,9 @@ class BusinessExpensesCompanion extends UpdateCompanion<BusinessExpense> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -3898,6 +3991,9 @@ class BusinessExpensesCompanion extends UpdateCompanion<BusinessExpense> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (lastUpdated.present) {
       map['last_updated'] = Variable<DateTime>(lastUpdated.value);
     }
@@ -3911,12 +4007,14 @@ class BusinessExpensesCompanion extends UpdateCompanion<BusinessExpense> {
   String toString() {
     return (StringBuffer('BusinessExpensesCompanion(')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('title: $title, ')
           ..write('amount: $amount, ')
           ..write('date: $date, ')
           ..write('category: $category, ')
           ..write('vendorName: $vendorName, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('lastUpdated: $lastUpdated, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -5485,24 +5583,28 @@ typedef $$BusinessProfilesTableProcessedTableManager =
 typedef $$BusinessExpensesTableCreateCompanionBuilder =
     BusinessExpensesCompanion Function({
       Value<int> id,
+      required String remoteId,
       required String title,
       required double amount,
       required DateTime date,
       Value<String?> category,
       Value<String?> vendorName,
       Value<String?> notes,
+      Value<bool> isActive,
       Value<DateTime?> lastUpdated,
       Value<DateTime?> createdAt,
     });
 typedef $$BusinessExpensesTableUpdateCompanionBuilder =
     BusinessExpensesCompanion Function({
       Value<int> id,
+      Value<String> remoteId,
       Value<String> title,
       Value<double> amount,
       Value<DateTime> date,
       Value<String?> category,
       Value<String?> vendorName,
       Value<String?> notes,
+      Value<bool> isActive,
       Value<DateTime?> lastUpdated,
       Value<DateTime?> createdAt,
     });
@@ -5518,6 +5620,11 @@ class $$BusinessExpensesTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5551,6 +5658,11 @@ class $$BusinessExpensesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get lastUpdated => $composableBuilder(
     column: $table.lastUpdated,
     builder: (column) => ColumnFilters(column),
@@ -5573,6 +5685,11 @@ class $$BusinessExpensesTableOrderingComposer
   });
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5606,6 +5723,11 @@ class $$BusinessExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get lastUpdated => $composableBuilder(
     column: $table.lastUpdated,
     builder: (column) => ColumnOrderings(column),
@@ -5629,6 +5751,9 @@ class $$BusinessExpensesTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -5648,6 +5773,9 @@ class $$BusinessExpensesTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   GeneratedColumn<DateTime> get lastUpdated => $composableBuilder(
     column: $table.lastUpdated,
@@ -5696,44 +5824,52 @@ class $$BusinessExpensesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> remoteId = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String?> category = const Value.absent(),
                 Value<String?> vendorName = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> lastUpdated = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
               }) => BusinessExpensesCompanion(
                 id: id,
+                remoteId: remoteId,
                 title: title,
                 amount: amount,
                 date: date,
                 category: category,
                 vendorName: vendorName,
                 notes: notes,
+                isActive: isActive,
                 lastUpdated: lastUpdated,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String remoteId,
                 required String title,
                 required double amount,
                 required DateTime date,
                 Value<String?> category = const Value.absent(),
                 Value<String?> vendorName = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> lastUpdated = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
               }) => BusinessExpensesCompanion.insert(
                 id: id,
+                remoteId: remoteId,
                 title: title,
                 amount: amount,
                 date: date,
                 category: category,
                 vendorName: vendorName,
                 notes: notes,
+                isActive: isActive,
                 lastUpdated: lastUpdated,
                 createdAt: createdAt,
               ),

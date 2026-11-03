@@ -112,12 +112,14 @@ class BusinessProfiles extends Table {
 
 class BusinessExpenses extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get remoteId => text().unique()();
   TextColumn get title => text().withLength(min: 1, max: 100)();
   RealColumn get amount => real()();
   DateTimeColumn get date => dateTime()();
   TextColumn get category => text().nullable()();
   TextColumn get vendorName => text().withLength(min: 1, max: 100).nullable()();
   TextColumn get notes => text().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn? get lastUpdated => dateTime().nullable()();
   DateTimeColumn? get createdAt => dateTime().nullable()();
 }

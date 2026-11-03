@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:invoicely/features/business_expenses/view/business_expenses_list_screen.dart';
 import 'package:invoicely/features/clients/view/client_list_screen.dart';
 import 'package:invoicely/features/dashboard/view/dashboard_screen.dart';
 import 'package:invoicely/features/invoice/view/invoice_list_screen.dart';
@@ -18,6 +19,7 @@ class _MainShellState extends State<MainShell> {
   final _screens = const [
     DashboardScreen(),
     InvoiceListScreen(),
+    BusinessExpensesListScreen(),
     ClientListScreen(),
     ProductListScreen(),
     SettingsScreen(),
@@ -33,19 +35,36 @@ class _MainShellState extends State<MainShell> {
         }
       },
       child: Scaffold(
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _screens,
-        ),
+        body: IndexedStack(index: _selectedIndex, children: _screens),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedIndex,
-          onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+          onDestinationSelected: (index) =>
+              setState(() => _selectedIndex = index),
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-            NavigationDestination(icon: Icon(Icons.receipt_rounded), label: 'Invoices'),
-            NavigationDestination(icon: Icon(Icons.people_rounded), label: 'Clients'),
-            NavigationDestination(icon: Icon(Icons.inventory_2_rounded), label: 'Products'),
-            NavigationDestination(icon: Icon(Icons.settings_rounded), label: 'Settings'),
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_rounded),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_rounded),
+              label: 'Invoices',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.payment),
+              label: 'Business Expenses',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.people_rounded),
+              label: 'Clients',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.inventory_2_rounded),
+              label: 'Products',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_rounded),
+              label: 'Settings',
+            ),
           ],
         ),
       ),
