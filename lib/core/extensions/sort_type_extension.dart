@@ -1,5 +1,6 @@
 import 'package:invoicely/core/enum/sort_type.dart';
 import 'package:invoicely/core/models/sortable_entity.dart';
+import 'package:invoicely/data/database/database.dart';
 
 import '../../features/products/data/product_model.dart';
 
@@ -44,6 +45,32 @@ extension SortTypeExtension on SortType {
     return items;
   }
 
+  List<BusinessExpense> sortExpenses(List<BusinessExpense> list) {
+    final items = List<BusinessExpense>.from(list);
+
+    items.sort((a, b) {
+      switch (this) {
+        case SortType.nameAsc:
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        case SortType.nameDesc:
+          return b.title.toLowerCase().compareTo(a.title.toLowerCase());
+        case SortType.newest:
+          return b.date.compareTo(a.createdAt!);
+        case SortType.oldest:
+          return a.date.compareTo(b.createdAt!);
+        case SortType.priceAsc:
+          return a.amount.compareTo(b.amount);
+        case SortType.priceDesc:
+          return b.amount.compareTo(a.amount);
+        case SortType.quantityAsc:
+        case SortType.quantityDesc:
+          return 0; // expenses have no quantity
+      }
+    });
+
+    return items;
+  }
+
   static List<SortType> getOptionsFor(Type modelType) {
     final common = [
       SortType.nameAsc,
@@ -60,6 +87,10 @@ extension SortTypeExtension on SortType {
         SortType.quantityAsc,
         SortType.quantityDesc,
       ];
+    }
+
+    if (modelType == BusinessExpense) {
+      return [...common, SortType.priceAsc, SortType.priceDesc];
     }
 
     // For Clients or Invoices, just return the common ones

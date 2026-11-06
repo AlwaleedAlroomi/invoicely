@@ -94,22 +94,20 @@ class BusinessExpensesService {
 
   Future<Result<BusinessExpense>> insertExpense(BusinessExpense expense) async {
     try {
+      final companion = expense
+          .toCompanion(true)
+          .copyWith(
+            id: Value.absent(),
+            remoteId: Value(uuid.v4()),
+            createdAt: Value(DateTime.now()),
+          );
+
       final generatedId = await _db
           .into(_db.businessExpenses)
-          .insert(
-            BusinessExpensesCompanion(
-              remoteId: Value(uuid.v4()),
-              title: Value(expense.title),
-              amount: Value(expense.amount),
-              date: Value(expense.date),
-              category: Value(expense.category),
-              vendorName: Value(expense.vendorName),
-              notes: Value(expense.notes),
-              createdAt: Value(DateTime.now()),
-              lastUpdated: Value(expense.lastUpdated),
-            ),
-          );
+          .insert(companion);
       final savedExpense = expense.copyWith(id: generatedId);
+      print(savedExpense);
+
       return Success(savedExpense);
     } catch (e) {
       return Error(

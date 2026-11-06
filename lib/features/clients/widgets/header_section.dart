@@ -3,7 +3,6 @@ import 'package:invoicely/core/constants/countries.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/invoice/view/invoice_form_screen.dart';
-import 'package:invoicely/features/invoice/widgets/invoice_history.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HeaderSection extends StatelessWidget {

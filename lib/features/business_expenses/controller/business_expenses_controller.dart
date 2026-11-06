@@ -4,8 +4,9 @@ import 'package:invoicely/core/errors/failure.dart';
 import 'package:invoicely/core/extensions/sort_type_extension.dart';
 import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/database/database.dart';
+import 'package:invoicely/features/business_expenses/providers/business_expenses_provider.dart';
 import 'package:invoicely/features/business_expenses/repository/business_expenses_repository.dart';
-import 'package:invoicely/features/products/providers/product_providers.dart';
+// import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BusinessExpensesListState {
@@ -66,7 +67,9 @@ class BusinessExpensesController
         ),
       ) {
     ref.listen(sortTypeProvider, (previous, next) {
-      // fetchExpenses()
+      if (previous != next) {
+        fetchExpenses();
+      }
     });
   }
 
@@ -237,11 +240,13 @@ class BusinessExpensesController
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((expense) {
-        return expense.title.toLowerCase().contains(query);
+        return expense.title.toLowerCase().contains(query) ||
+            expense.vendorName!.toLowerCase().contains(query) ||
+            expense.category!.toLowerCase().contains(query);
       }).toList();
     }
-    // TODO: impl sort func
-    // filtered=sortType.sort(filtered);
+    print(filtered);
+    filtered = sortType.sortExpenses(filtered);
     state = state.copyWith(isLoading: false, businessExpenses: filtered);
   }
 

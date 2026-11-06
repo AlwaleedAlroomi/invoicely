@@ -627,8 +627,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     return Text(
       formatAmount(product.unitPrice, currency),
       style: const TextStyle(
-        color: AppColors.primary,
-        fontWeight: FontWeight.w600,
+        // color: AppColors.primary,
+        fontWeight: FontWeight.bold,
         fontSize: 14,
       ),
     );
@@ -686,7 +686,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         onTap: () => showProductQrDialog(context, product),
         child: Icon(
           Icons.qr_code_2_rounded,
-          color: AppColors.primary,
+          // color: AppColors.primary,
           size: size,
         ),
       ),

@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -9,6 +7,7 @@ import 'package:invoicely/core/services/permission_helper.dart';
 import 'package:invoicely/core/utils/currency_utils.dart';
 import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/core/widgets/slidable_action.dart';
+import 'package:invoicely/features/business_expenses/providers/business_expenses_provider.dart';
 import 'package:invoicely/features/clients/data/client_model.dart';
 import 'package:invoicely/features/clients/providers/client_providers.dart';
 import 'package:invoicely/features/clients/view/client_form_screen.dart';
@@ -69,6 +68,7 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
     final invoicesAsync = ref.watch(allInvoicesProvider);
     final clientsAsync = ref.watch(allClientsProvider);
     final productsAsync = ref.watch(allProductsProvider);
+    final totalExpense = ref.watch(allBusinessExpensesProvider);
     final defaultCurrency = DefaultSettings.getCurrency(
       ref.read(sharedPreferencesProvider),
     );
@@ -100,6 +100,7 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
             _buildSummaryRow(
               context,
               invoicesAsync,
+              totalExpense,
               clientsAsync,
               productsAsync,
               defaultCurrency,
@@ -133,12 +134,14 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
   Widget _buildSummaryRow(
     BuildContext context,
     AsyncValue<List<InvoiceModel>> invoicesAsync,
+    AsyncValue<double> expensesTotal,
     AsyncValue<List<ClientModel>> clientsAsync,
     AsyncValue<List<ProductModel>> productsAsync,
     String defaultCurrency,
   ) {
     final isLoading =
         invoicesAsync.isLoading ||
+        expensesTotal.isLoading ||
         clientsAsync.isLoading ||
         productsAsync.isLoading;
     if (isLoading) {
@@ -151,6 +154,7 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
     final invoices = invoicesAsync.valueOrNull ?? [];
     final clients = clientsAsync.valueOrNull ?? [];
     final products = productsAsync.valueOrNull ?? [];
+    final totalExpenses = expensesTotal.valueOrNull ?? 0.0;
 
     final totalRevenue = invoices
         .where((i) => i.status == InvoiceStatus.paid)
@@ -183,6 +187,15 @@ class _DashboardScreen extends ConsumerState<DashboardScreen> {
             label: 'Revenue',
             value: formatAmount(totalRevenue, defaultCurrency, decimals: 0),
             color: Colors.green,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _SummaryCard(
+            icon: Icons.account_balance_wallet_outlined,
+            label: "Expenses",
+            value: formatAmount(totalExpenses, defaultCurrency, decimals: 0),
+            color: Colors.red,
           ),
         ),
         const SizedBox(width: 8),

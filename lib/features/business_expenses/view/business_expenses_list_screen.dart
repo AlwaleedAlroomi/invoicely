@@ -9,9 +9,12 @@ import 'package:invoicely/core/utils/fade_through_route.dart';
 import 'package:invoicely/core/widgets/slidable_action.dart';
 import 'package:invoicely/data/database/database.dart';
 import 'package:invoicely/features/business_expenses/controller/business_expenses_controller.dart';
-import 'package:invoicely/features/business_expenses/providers/business_expenses_provider.dart';
+import 'package:invoicely/features/business_expenses/providers/business_expenses_provider.dart'
+    hide isListViewModeProvider;
 import 'package:invoicely/features/business_expenses/view/business_expenses_form_screen.dart';
 import 'package:invoicely/features/business_expenses/view/business_expenses_view_screen.dart';
+import 'package:invoicely/features/products/providers/product_providers.dart'
+    hide sortTypeProvider;
 
 class BusinessExpensesListScreen extends ConsumerStatefulWidget {
   const BusinessExpensesListScreen({super.key});
@@ -93,7 +96,7 @@ class _BusinessExpensesListScreen
     final state = ref.watch(businessExpenseController);
     final sortType = ref.watch(sortTypeProvider);
     final isListView = ref.watch(isListViewModeProvider);
-    final sortOptions = SortTypeExtension.getOptionsFor(BusinessExpenses);
+    final sortOptions = SortTypeExtension.getOptionsFor(BusinessExpense);
 
     ref.listen(businessExpenseController, (previous, next) {
       if (next.failure != null) {
@@ -135,8 +138,10 @@ class _BusinessExpensesListScreen
               tooltip: 'View Mode',
               onPressed: () {
                 final prefs = ref.read(sharedPreferencesProvider);
-                prefs.setBool('is_expense_list_view', !isListView);
-                ref.read(isListViewModeProvider.notifier).state = !isListView;
+                final currentViewMode = ref.read(isListViewModeProvider);
+                prefs.setBool('is_expense_list_view', !currentViewMode);
+                ref.read(isListViewModeProvider.notifier).state =
+                    !currentViewMode;
               },
               icon: Icon(
                 isListView ? Icons.grid_view_rounded : Icons.view_list_rounded,
@@ -182,13 +187,12 @@ class _BusinessExpensesListScreen
               ),
             ),
             if (!state.isLoading && state.businessExpenses.isNotEmpty)
-              _buildSummaryBanner(state.businessExpenses),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 400),
-                child: _buildBody(context, state, isListView),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  child: _buildBody(context, state, isListView),
+                ),
               ),
-            ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -199,59 +203,6 @@ class _BusinessExpensesListScreen
             ).push(FadeThroughRoute(page: const BusinessExpensesFormScreen()));
           },
           child: const Icon(Icons.add),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryBanner(List<BusinessExpense> expenses) {
-    final total = expenses
-        .where((e) => e.isActive)
-        .fold<double>(0, (sum, e) => sum + e.amount);
-    final scheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: scheme.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.account_balance_wallet_outlined, color: scheme.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Total expenses',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: scheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  Text(
-                    _currency.format(total),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              '${expenses.length} item${expenses.length == 1 ? '' : 's'}',
-              style: TextStyle(
-                fontSize: 12,
-                color: scheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -331,26 +282,20 @@ class _BusinessExpensesListScreen
 
   void _openExpense(BusinessExpense expense) {
     Navigator.of(context).push(
-      FadeThroughRoute(
-        page: BusinessExpensesViewScreen(
-          // initExpense: expense
-        ),
-      ),
+      FadeThroughRoute(page: BusinessExpensesViewScreen(initExpense: expense)),
     );
   }
 
   void _editExpense(BusinessExpense expense) {
     Navigator.of(context).push(
       FadeThroughRoute(
-        page: BusinessExpensesFormScreen(
-          //initialExpense: expense
-        ),
+        page: BusinessExpensesFormScreen(initialExpense: expense),
       ),
     );
   }
 
   Widget _buildExpenseListTile(BusinessExpense expense) {
-    // final color = _categoryColor(expense.category);
+    final color = _categoryColor(expense.category!);
 
     return Slidable(
       key: ValueKey(expense.remoteId),
@@ -391,12 +336,8 @@ class _BusinessExpensesListScreen
               padding: const EdgeInsets.all(8),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor:
-                      Colors.amber, //color.withValues(alpha: 0.15),
-                  child: Icon(
-                    Icons.home, //_categoryIcon(expense.category)
-                    color: Colors.amber,
-                  ),
+                  backgroundColor: color.withValues(alpha: 0.15),
+                  child: Icon(_categoryIcon(expense.category!), color: color),
                 ),
                 title: Text(
                   expense.title,
@@ -508,7 +449,7 @@ class _BusinessExpensesListScreen
   }
 
   Widget _buildExpenseGridCard(BusinessExpense expense) {
-    // final color = _categoryColor(expense.category);
+    final color = _categoryColor(expense.category!);
 
     return Card(
       elevation: 4,
@@ -530,11 +471,10 @@ class _BusinessExpensesListScreen
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor:
-                      Colors.amber, //color.withValues(alpha: 0.15),
+                  backgroundColor: color.withValues(alpha: 0.15),
                   child: Icon(
-                    Icons.home, //_categoryIcon(expense.category),
-                    color: Colors.amber,
+                    _categoryIcon(expense.category!),
+                    color: color,
                     size: 26,
                   ),
                 ),
@@ -549,18 +489,18 @@ class _BusinessExpensesListScreen
                   _currency.format(expense.amount),
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                    // color: color,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                // Text(
-                //   expense.category,
-                //   style: const TextStyle(fontSize: 12, color: Colors.grey),
-                //   maxLines: 1,
-                //   overflow: TextOverflow.ellipsis,
-                // ),
+                Text(
+                  expense.category!,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 Text(
                   _dateFormat.format(expense.date),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),

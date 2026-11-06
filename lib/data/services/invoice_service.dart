@@ -82,7 +82,7 @@ class InvoiceService {
         _db.invoices,
       )..where((t) => t.remoteId.equals(remoteId))).getSingleOrNull();
       if (row == null) return null;
-      return _toModel(row);
+      return await _toModel(row);
     } catch (e) {
       debugPrint('Warning: Failed to find invoice by remoteId $remoteId: $e');
       return null;
