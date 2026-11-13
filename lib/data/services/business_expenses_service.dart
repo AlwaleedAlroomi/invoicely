@@ -202,4 +202,23 @@ class BusinessExpensesService {
       return null;
     }
   }
+
+  Future<double> getMonthlyExpenseTotal() async {
+    final now = DateTime.now();
+
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 1);
+
+    final totalSum = _db.businessExpenses.amount.sum();
+
+    final query = _db.selectOnly(_db.businessExpenses)
+      ..addColumns([totalSum])
+      ..where(
+        _db.businessExpenses.date.isBiggerOrEqualValue(startOfMonth) &
+            _db.businessExpenses.date.isSmallerOrEqualValue(endOfMonth),
+      );
+
+    final result = await query.map((row) => row.read(totalSum)).getSingle();
+    return result ?? 0.0;
+  }
 }

@@ -84,7 +84,6 @@ class _BusinessExpensesFormScreenState
     if (!_formKey.currentState!.validate()) return;
     final controller = ref.read(businessExpenseController.notifier);
 
-    // NOTE: adjust to match your Drift table / controller API.
     final expenseData = BusinessExpense(
       id: _isEditing ? widget.initialExpense!.id : 0,
       remoteId: _isEditing ? (widget.initialExpense!.remoteId) : Uuid().v4(),

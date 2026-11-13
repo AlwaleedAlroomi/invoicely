@@ -108,4 +108,9 @@ class BusinessExpensesRepositoryImpl implements BusinessExpensesRepository {
       return Error(AppFailure('Unexpected error fetching expense: $e'));
     }
   }
+
+  @override
+  Future<double> getMonthlyExpenseTotal() async {
+    return await _businessExpensesService.getMonthlyExpenseTotal();
+  }
 }

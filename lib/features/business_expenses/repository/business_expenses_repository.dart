@@ -13,5 +13,6 @@ abstract class BusinessExpensesRepository {
   Future<Result<void>> deleteExpense(BusinessExpense expense);
   Future<Result<void>> forceDeleteExpense(BusinessExpense expense);
   Future<double> getTotalExpenses();
+  Future<double> getMonthlyExpenseTotal();
   Future<Result<BusinessExpense>> getExpenseByRemoteId(BusinessExpense expense);
 }

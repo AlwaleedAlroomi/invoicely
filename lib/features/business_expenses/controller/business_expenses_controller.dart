@@ -6,6 +6,7 @@ import 'package:invoicely/core/results/result.dart';
 import 'package:invoicely/data/database/database.dart';
 import 'package:invoicely/features/business_expenses/providers/business_expenses_provider.dart';
 import 'package:invoicely/features/business_expenses/repository/business_expenses_repository.dart';
+import 'package:invoicely/src/home_widget/expense_summary_widget.home_widget.dart';
 // import 'package:invoicely/features/products/providers/product_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -151,6 +152,7 @@ class BusinessExpensesController
 
     switch (result) {
       case Success<BusinessExpense> _:
+        await updateExpenseWidgetFromDatabase();
         fetchExpenses();
         break;
       case Error<BusinessExpense> e:
@@ -221,6 +223,15 @@ class BusinessExpensesController
         );
         break;
     }
+  }
+
+  Future<void> updateExpenseWidgetFromDatabase() async {
+    final double monthlyTotal = await _businessExpensesRepository
+        .getMonthlyExpenseTotal();
+    await ExpenseSummaryWidgetSchemaHomeWidget.saveData(
+      monthlyTotal: '\$${monthlyTotal.toStringAsFixed(0)}',
+    );
+    await ExpenseSummaryWidgetSchemaHomeWidget.updateWidget();
   }
 
   void _applyFiltersAndSort() {
